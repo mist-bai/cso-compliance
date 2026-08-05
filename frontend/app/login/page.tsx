@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, Suspense, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { login, roleHome } from "@/lib/api";
 
@@ -45,25 +46,30 @@ function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} className="cso-card w-full max-w-md p-8">
-      <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
-      <p className="mt-1 text-sm text-slate-500">
-        演示密码统一为 <code>demo123</code>
-      </p>
+      <div className="mb-6 text-center">
+        <Link href="/" className="text-sm text-[var(--muted-foreground)] hover:underline">
+          代理商合规管理系统
+        </Link>
+        <h1 className="mt-2 text-2xl font-bold text-[var(--foreground)]">{title}</h1>
+        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+          演示密码统一为 <code className="rounded bg-[var(--muted)] px-1">demo123</code>
+        </p>
+      </div>
 
-      <label className="mt-6 block text-sm text-slate-600">
+      <label className="block text-sm text-[var(--muted-foreground)]">
         用户名
         <input
-          className="cso-input mt-1"
+          className="cso-input mt-1.5"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
         />
       </label>
-      <label className="mt-4 block text-sm text-slate-600">
+      <label className="mt-4 block text-sm text-[var(--muted-foreground)]">
         密码
         <input
           type="password"
-          className="cso-input mt-1"
+          className="cso-input mt-1.5"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
@@ -76,18 +82,19 @@ function LoginForm() {
         {loading ? "登录中…" : "登录"}
       </button>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-slate-500">
+      <div className="mt-5 grid grid-cols-2 gap-2">
         {Object.entries(demos).map(([key, d]) => (
           <button
             key={key}
             type="button"
-            className="rounded-md border border-slate-200 px-2 py-1.5 text-left hover:bg-slate-50"
+            className="rounded-md border border-[var(--border)] px-2 py-2 text-left text-xs text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
             onClick={() => {
               setUsername(d.username);
               setPassword("demo123");
             }}
           >
-            {d.label}: {d.username}
+            <div className="font-medium text-[var(--foreground)]">{d.label}</div>
+            <div>{d.username}</div>
           </button>
         ))}
       </div>
@@ -97,8 +104,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <Suspense fallback={<div className="text-slate-500">加载登录页…</div>}>
+    <div className="flex min-h-screen items-center justify-center bg-white px-4">
+      <Suspense fallback={<div className="text-[var(--muted-foreground)]">加载登录页…</div>}>
         <LoginForm />
       </Suspense>
     </div>

@@ -156,7 +156,7 @@ export default function AdminPage() {
   return (
     <AppShell
       title="后台管理"
-      subtitle="后台管理入口"
+      subtitle="后台管理"
       tabs={tabs}
       activeTab={tab}
       onTabChange={setTab}
@@ -189,27 +189,27 @@ export default function AdminPage() {
             <button className="cso-btn-primary">保存（默认密码 demo123）</button>
           </form>
           <div className="cso-card overflow-x-auto p-5 lg:col-span-2">
-            <h2 className="mb-3 font-semibold">代理商账号管理</h2>
-            <table className="min-w-full text-sm">
-              <thead className="border-b text-slate-500">
+            <h2 className="cso-page-title mb-1">代理商账号管理</h2>
+            <table className="cso-table">
+              <thead>
                 <tr>
-                  <th className="px-2 py-2 text-left">代理商名称</th>
-                  <th className="px-2 py-2 text-left">服务商</th>
-                  <th className="px-2 py-2 text-left">联系人</th>
-                  <th className="px-2 py-2 text-left">电话</th>
-                  <th className="px-2 py-2 text-left">邮箱</th>
-                  <th className="px-2 py-2 text-left">状态</th>
+                  <th>代理商名称</th>
+                  <th>服务商</th>
+                  <th>联系人</th>
+                  <th>电话</th>
+                  <th>邮箱</th>
+                  <th>状态</th>
                 </tr>
               </thead>
               <tbody>
                 {agents.map((a) => (
-                  <tr key={a.id} className="border-b border-slate-100">
-                    <td className="px-2 py-2.5">{a.name}</td>
-                    <td className="px-2 py-2.5">{a.provider_name}</td>
-                    <td className="px-2 py-2.5">{a.contact}</td>
-                    <td className="px-2 py-2.5">{a.phone}</td>
-                    <td className="px-2 py-2.5">{a.email}</td>
-                    <td className="px-2 py-2.5">{a.is_active ? "启用" : "停用"}</td>
+                  <tr key={a.id} >
+                    <td>{a.name}</td>
+                    <td>{a.provider_name}</td>
+                    <td>{a.contact}</td>
+                    <td>{a.phone}</td>
+                    <td>{a.email}</td>
+                    <td>{a.is_active ? "启用" : "停用"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -219,27 +219,27 @@ export default function AdminPage() {
       )}
 
       {tab === "providers" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 font-semibold">服务商管理</h2>
-          <p className="mb-3 text-sm text-slate-500">
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">服务商管理</h2>
+          <p className="mb-3 text-sm text-[var(--muted-foreground)]">
             来源：oracle_bridge.ORG_MAP + BI 发薪机构 MAT_YWGS（大连博道/天津博达/安徽博鑫/北京塞升）
           </p>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">编码</th>
-                <th className="px-2 py-2 text-left">名称</th>
-                <th className="px-2 py-2 text-left">区域</th>
-                <th className="px-2 py-2 text-left">来源</th>
+                <th>编码</th>
+                <th>名称</th>
+                <th>区域</th>
+                <th>来源</th>
               </tr>
             </thead>
             <tbody>
               {providers.map((p) => (
-                <tr key={p.id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{p.code}</td>
-                  <td className="px-2 py-2.5">{p.name}</td>
-                  <td className="px-2 py-2.5">{p.region}</td>
-                  <td className="px-2 py-2.5 text-xs text-slate-500">{p.source}</td>
+                <tr key={p.id} >
+                  <td>{p.code}</td>
+                  <td>{p.name}</td>
+                  <td>{p.region}</td>
+                  <td className="px-2 py-2.5 text-xs text-[var(--muted-foreground)]">{p.source}</td>
                 </tr>
               ))}
             </tbody>
@@ -248,25 +248,25 @@ export default function AdminPage() {
       )}
 
       {tab === "factories" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 font-semibold">工厂管理（法人组织）</h2>
-          <p className="mb-3 text-sm text-slate-500">
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">工厂管理（法人组织）</h2>
+          <p className="mb-3 text-sm text-[var(--muted-foreground)]">
             来源：营销信息推送问数 organizations.json（12 家）
           </p>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">编码</th>
-                <th className="px-2 py-2 text-left">简称</th>
-                <th className="px-2 py-2 text-left">全称</th>
+                <th>编码</th>
+                <th>简称</th>
+                <th>全称</th>
               </tr>
             </thead>
             <tbody>
               {factories.map((f) => (
-                <tr key={f.id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{f.code}</td>
-                  <td className="px-2 py-2.5">{f.short_name}</td>
-                  <td className="px-2 py-2.5">{f.name}</td>
+                <tr key={f.id} >
+                  <td>{f.code}</td>
+                  <td>{f.short_name}</td>
+                  <td>{f.name}</td>
                 </tr>
               ))}
             </tbody>
@@ -275,27 +275,27 @@ export default function AdminPage() {
       )}
 
       {tab === "hospitals" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 font-semibold">医院终端</h2>
-          <p className="mb-3 text-sm text-slate-500">
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">医院终端</h2>
+          <p className="mb-3 text-sm text-[var(--muted-foreground)]">
             当前为种子样例；后续可从 marketing_hospital_profile / 终端主数据批量导入
           </p>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">医院</th>
-                <th className="px-2 py-2 text-left">省</th>
-                <th className="px-2 py-2 text-left">市</th>
-                <th className="px-2 py-2 text-left">等级</th>
+                <th>医院</th>
+                <th>省</th>
+                <th>市</th>
+                <th>等级</th>
               </tr>
             </thead>
             <tbody>
               {hospitals.map((h) => (
-                <tr key={h.id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{h.name}</td>
-                  <td className="px-2 py-2.5">{h.province}</td>
-                  <td className="px-2 py-2.5">{h.city}</td>
-                  <td className="px-2 py-2.5">{h.level}</td>
+                <tr key={h.id} >
+                  <td>{h.name}</td>
+                  <td>{h.province}</td>
+                  <td>{h.city}</td>
+                  <td>{h.level}</td>
                 </tr>
               ))}
             </tbody>
@@ -304,28 +304,28 @@ export default function AdminPage() {
       )}
 
       {tab === "reps" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 font-semibold">代表备案管理</h2>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">代表备案管理</h2>
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">姓名</th>
-                <th className="px-2 py-2 text-left">代理商</th>
-                <th className="px-2 py-2 text-left">工厂</th>
-                <th className="px-2 py-2 text-left">状态</th>
-                <th className="px-2 py-2 text-left">操作</th>
+                <th>姓名</th>
+                <th>代理商</th>
+                <th>工厂</th>
+                <th>状态</th>
+                <th>操作</th>
               </tr>
             </thead>
             <tbody>
               {filings.map((f) => (
-                <tr key={f.id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{f.rep_name}</td>
-                  <td className="px-2 py-2.5">{f.agent_name}</td>
-                  <td className="px-2 py-2.5">{f.factory_name}</td>
-                  <td className="px-2 py-2.5">
+                <tr key={f.id} >
+                  <td>{f.rep_name}</td>
+                  <td>{f.agent_name}</td>
+                  <td>{f.factory_name}</td>
+                  <td>
                     <StatusBadge status={f.status} />
                   </td>
-                  <td className="px-2 py-2.5">
+                  <td>
                     <div className="flex flex-wrap gap-1">
                       {f.status === "已申请待考试" && (
                         <button
@@ -361,27 +361,27 @@ export default function AdminPage() {
       )}
 
       {tab === "products" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 font-semibold">产品管理</h2>
-          <p className="mb-3 text-sm text-slate-500">
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">产品管理</h2>
+          <p className="mb-3 text-sm text-[var(--muted-foreground)]">
             来源：marketing-platform 拜访产品大类 + 流向常用品种
           </p>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">产品</th>
-                <th className="px-2 py-2 text-left">编码</th>
-                <th className="px-2 py-2 text-left">工厂简称</th>
-                <th className="px-2 py-2 text-left">工厂全称</th>
+                <th>产品</th>
+                <th>编码</th>
+                <th>工厂简称</th>
+                <th>工厂全称</th>
               </tr>
             </thead>
             <tbody>
               {products.map((p) => (
-                <tr key={p.id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{p.name}</td>
-                  <td className="px-2 py-2.5">{p.code}</td>
-                  <td className="px-2 py-2.5">{p.factory_short_name}</td>
-                  <td className="px-2 py-2.5">{p.factory_name}</td>
+                <tr key={p.id} >
+                  <td>{p.name}</td>
+                  <td>{p.code}</td>
+                  <td>{p.factory_short_name}</td>
+                  <td>{p.factory_name}</td>
                 </tr>
               ))}
             </tbody>
@@ -390,24 +390,24 @@ export default function AdminPage() {
       )}
 
       {tab === "fees" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 font-semibold">费用标准</h2>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">费用标准</h2>
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">名称</th>
-                <th className="px-2 py-2 text-left">类别</th>
-                <th className="px-2 py-2 text-left">金额</th>
-                <th className="px-2 py-2 text-left">单位</th>
+                <th>名称</th>
+                <th>类别</th>
+                <th>金额</th>
+                <th>单位</th>
               </tr>
             </thead>
             <tbody>
               {fees.map((f) => (
-                <tr key={f.id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{f.name}</td>
-                  <td className="px-2 py-2.5">{f.category}</td>
-                  <td className="px-2 py-2.5">{f.amount}</td>
-                  <td className="px-2 py-2.5">{f.unit}</td>
+                <tr key={f.id} >
+                  <td>{f.name}</td>
+                  <td>{f.category}</td>
+                  <td>{f.amount}</td>
+                  <td>{f.unit}</td>
                 </tr>
               ))}
             </tbody>
@@ -416,8 +416,8 @@ export default function AdminPage() {
       )}
 
       {tab === "reports" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 font-semibold">报告管理</h2>
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">报告管理</h2>
           <ul className="space-y-2">
             {reports.map((r) => (
               <li key={r.id} className="flex items-center justify-between border-b border-slate-100 py-2 text-sm">
@@ -439,8 +439,8 @@ export default function AdminPage() {
       )}
 
       {tab === "approvals" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 font-semibold">会议费用审批</h2>
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">会议费用审批</h2>
           <ul className="space-y-2">
             {meetings.map((m) => (
               <li key={m.id} className="flex items-center justify-between border-b border-slate-100 py-2 text-sm">

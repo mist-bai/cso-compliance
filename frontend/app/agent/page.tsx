@@ -2,7 +2,9 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import AppShell, { StatusBadge } from "@/components/AppShell";
+import { Modal, ProviderSelect, SearchInput, SectionCard } from "@/components/ui";
 import { api } from "@/lib/api";
+import { Pencil } from "lucide-react";
 
 type Filing = {
   id: number;
@@ -220,48 +222,37 @@ export default function AgentPage() {
   return (
     <AppShell
       title="代理商入口"
-      subtitle="誉衡药业 · 真实服务商主数据（大连博道等）"
+      subtitle="誉衡药业 - 华北区"
       tabs={tabs}
       activeTab={tab}
       onTabChange={setTab}
       requiredRoles={["agent"]}
       rightSlot={
-        <label className="flex items-center gap-2 text-sm text-slate-600">
-          服务商
-          <select
-            className="cso-input w-auto"
-            value={providerId}
-            onChange={(e) => setProviderId(e.target.value)}
-          >
-            <option value="">全部</option>
-            {providers.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <ProviderSelect
+          value={providerId}
+          onChange={setProviderId}
+          options={providers}
+        />
       }
     >
       {error && <p className="mb-4 text-sm text-rose-600">{error}</p>}
 
       {tab === "filings" && (
-        <section className="cso-card p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold">代表备案列表</h2>
-              <p className="text-sm text-slate-500">管理代表的备案信息和状态</p>
-            </div>
+        <SectionCard
+          title="代表备案列表"
+          description="管理代表的备案信息和状态"
+          action={
             <button className="cso-btn-primary" onClick={() => setShowCreateFiling(true)}>
               + 新增代表备案
             </button>
-          </div>
-          <div className="mb-4 flex flex-wrap gap-3">
-            <input
-              className="cso-input max-w-xs"
+          }
+        >
+          <div className="cso-toolbar">
+            <SearchInput
+              className="max-w-sm flex-1"
               placeholder="搜索姓名或身份证号..."
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={setQ}
             />
             <select
               className="cso-input w-auto"
@@ -277,200 +268,212 @@ export default function AgentPage() {
             </select>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead className="border-b text-slate-500">
+            <table className="cso-table">
+              <thead>
                 <tr>
-                  <th className="px-2 py-2">姓名</th>
-                  <th className="px-2 py-2">身份证号</th>
-                  <th className="px-2 py-2">代理商</th>
-                  <th className="px-2 py-2">服务商</th>
-                  <th className="px-2 py-2">备案工厂</th>
-                  <th className="px-2 py-2">有效期</th>
-                  <th className="px-2 py-2">状态</th>
+                  <th>姓名</th>
+                  <th>身份证号</th>
+                  <th>代理商</th>
+                  <th>服务商</th>
+                  <th>备案工厂</th>
+                  <th>有效期</th>
+                  <th>状态</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredFilings.map((row) => (
-                  <tr key={row.id} className="border-b border-slate-100">
-                    <td className="px-2 py-2.5">{row.rep_name}</td>
-                    <td className="px-2 py-2.5">{row.id_card}</td>
-                    <td className="px-2 py-2.5">{row.agent_name}</td>
-                    <td className="px-2 py-2.5">{row.provider_name}</td>
-                    <td className="px-2 py-2.5">{row.factory_name}</td>
-                    <td className="px-2 py-2.5">
+                  <tr key={row.id}>
+                    <td>{row.rep_name}</td>
+                    <td>{row.id_card}</td>
+                    <td>{row.agent_name}</td>
+                    <td>{row.provider_name}</td>
+                    <td>{row.factory_name}</td>
+                    <td>
                       {row.valid_from || "-"} ~ {row.valid_to || "-"}
                     </td>
-                    <td className="px-2 py-2.5">
+                    <td>
                       <StatusBadge status={row.status} />
+                    </td>
+                    <td>
+                      <button className="cso-btn-ghost h-8 px-2 text-[var(--muted-foreground)]">
+                        <Pencil size={15} />
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </section>
+        </SectionCard>
       )}
 
       {tab === "visits" && (
-        <section className="cso-card p-5">
-          <h2 className="text-lg font-semibold">代表拜访统计</h2>
-          <p className="mb-4 text-sm text-slate-500">
-            查看名下代表的拜访记录和活动统计（拜访记录由代表自行提交）
-          </p>
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b text-slate-500">
-              <tr>
-                <th className="px-2 py-2">代表姓名</th>
-                <th className="px-2 py-2">服务商</th>
-                <th className="px-2 py-2">拜访次数</th>
-                <th className="px-2 py-2">完成率</th>
-                <th className="px-2 py-2">统计周期</th>
-                <th className="px-2 py-2">上传日期</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visits.map((row) => (
-                <tr key={row.id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{row.rep_name}</td>
-                  <td className="px-2 py-2.5">{row.provider_name}</td>
-                  <td className="px-2 py-2.5">{row.visit_count} 次</td>
-                  <td className="px-2 py-2.5">{row.completion_rate}%</td>
-                  <td className="px-2 py-2.5">{row.period}</td>
-                  <td className="px-2 py-2.5">{row.uploaded_on || "-"}</td>
+        <SectionCard
+          title="代表拜访统计"
+          description="查看名下代表的拜访记录和活动统计（拜访记录由代表自行提交）"
+        >
+          <div className="overflow-x-auto">
+            <table className="cso-table">
+              <thead>
+                <tr>
+                  <th>代表姓名</th>
+                  <th>服务商</th>
+                  <th>拜访次数</th>
+                  <th>完成率</th>
+                  <th>统计周期</th>
+                  <th>上传日期</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+              </thead>
+              <tbody>
+                {visits.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.rep_name}</td>
+                    <td>{row.provider_name}</td>
+                    <td>
+                      <button className="cso-btn-secondary h-8 px-3">{row.visit_count} 次</button>
+                    </td>
+                    <td>{row.completion_rate}%</td>
+                    <td>{row.period}</td>
+                    <td>{row.uploaded_on || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </SectionCard>
       )}
 
       {tab === "meetings" && (
-        <section className="space-y-4">
-          <div className="cso-card p-5">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold">学术会议列表</h2>
-                <p className="text-sm text-slate-500">管理和查看学术会议信息</p>
-              </div>
-              <button className="cso-btn-primary" onClick={() => setShowMeetingForm(true)}>
-                + 会议申请
-              </button>
-            </div>
-            <div className="mb-4 flex flex-wrap gap-3">
-              <input
-                className="cso-input max-w-xs"
-                placeholder="搜索会议名称或地点..."
-                value={meetingQ}
-                onChange={(e) => setMeetingQ(e.target.value)}
-              />
-              <input
-                className="cso-input max-w-xs"
-                placeholder="搜索参与代表..."
-                value={repQ}
-                onChange={(e) => setRepQ(e.target.value)}
-              />
-              <button className="cso-btn-secondary" onClick={load}>
-                查询
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
-                <thead className="border-b text-slate-500">
-                  <tr>
-                    <th className="px-2 py-2">会议名称</th>
-                    <th className="px-2 py-2">日期</th>
-                    <th className="px-2 py-2">地点</th>
-                    <th className="px-2 py-2">服务商</th>
-                    <th className="px-2 py-2">参与人数</th>
-                    <th className="px-2 py-2">预算</th>
-                    <th className="px-2 py-2">状态</th>
-                    <th className="px-2 py-2">操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {meetings.map((m) => (
-                    <tr key={m.id} className="border-b border-slate-100">
-                      <td className="px-2 py-2.5">
-                        <button className="font-medium text-brand-600 hover:underline" onClick={() => setDetail(m)}>
-                          {m.title}
-                        </button>
-                      </td>
-                      <td className="px-2 py-2.5">{m.meeting_date || "-"}</td>
-                      <td className="px-2 py-2.5">{m.location || "-"}</td>
-                      <td className="px-2 py-2.5">{m.provider_name || "-"}</td>
-                      <td className="px-2 py-2.5">{m.attendees_count || 0} 人</td>
-                      <td className="px-2 py-2.5">
-                        {m.budget != null ? `¥${m.budget.toLocaleString()}` : "-"}
-                      </td>
-                      <td className="px-2 py-2.5">
-                        <StatusBadge status={m.status} />
-                      </td>
-                      <td className="px-2 py-2.5">
-                        <div className="flex flex-wrap gap-1">
-                          {(m.status === "计划中" || m.status === "已驳回") && (
-                            <button className="cso-btn-secondary" onClick={() => submitMeeting(m.id)}>
-                              提交审批
-                            </button>
-                          )}
-                          {m.status === "已批准" && (
-                            <button className="cso-btn-primary" onClick={() => submitSummary(m.id)}>
-                              提交总结
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        <SectionCard
+          title="学术会议列表"
+          description="管理和查看学术会议信息"
+          action={
+            <button className="cso-btn-primary" onClick={() => setShowMeetingForm(true)}>
+              + 会议申请
+            </button>
+          }
+        >
+          <div className="cso-toolbar">
+            <SearchInput
+              className="max-w-xs flex-1"
+              placeholder="搜索会议名称或地点..."
+              value={meetingQ}
+              onChange={setMeetingQ}
+            />
+            <SearchInput
+              className="max-w-xs flex-1"
+              placeholder="搜索参与代表..."
+              value={repQ}
+              onChange={setRepQ}
+            />
+            <button className="cso-btn-secondary" onClick={load}>
+              查询
+            </button>
           </div>
-        </section>
+          <div className="overflow-x-auto">
+            <table className="cso-table">
+              <thead>
+                <tr>
+                  <th>会议名称</th>
+                  <th>日期</th>
+                  <th>地点</th>
+                  <th>服务商</th>
+                  <th>参与人数</th>
+                  <th>预算</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {meetings.map((m) => (
+                  <tr key={m.id}>
+                    <td>
+                      <button
+                        className="font-medium text-[var(--foreground)] underline-offset-4 hover:underline"
+                        onClick={() => setDetail(m)}
+                      >
+                        {m.title}
+                      </button>
+                    </td>
+                    <td>{m.meeting_date || "-"}</td>
+                    <td>{m.location || "-"}</td>
+                    <td>{m.provider_name || "-"}</td>
+                    <td>{m.attendees_count || 0} 人</td>
+                    <td>{m.budget != null ? `¥${m.budget.toLocaleString()}` : "-"}</td>
+                    <td>
+                      <StatusBadge status={m.status} />
+                    </td>
+                    <td>
+                      <div className="flex flex-wrap gap-1">
+                        {(m.status === "计划中" || m.status === "已驳回") && (
+                          <button className="cso-btn-secondary h-8" onClick={() => submitMeeting(m.id)}>
+                            提交审批
+                          </button>
+                        )}
+                        {m.status === "已批准" && (
+                          <button className="cso-btn-primary h-8" onClick={() => submitSummary(m.id)}>
+                            提交总结
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </SectionCard>
       )}
 
       {tab === "training" && (
-        <section className="cso-card p-5">
-          <h2 className="text-lg font-semibold">代表培训情况</h2>
-          <p className="mb-4 text-sm text-slate-500">
-            查看名下代表课程完成进度；课程内容在「课程管理」维护，备案考试通过后自动推进备案状态
-          </p>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
-              <tr>
-                <th className="px-2 py-2 text-left">代表</th>
-                <th className="px-2 py-2 text-left">课程总数</th>
-                <th className="px-2 py-2 text-left">已完成</th>
-                <th className="px-2 py-2 text-left">待完成</th>
-              </tr>
-            </thead>
-            <tbody>
-              {trainStats.map((s) => (
-                <tr key={s.representative_id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{s.rep_name}</td>
-                  <td className="px-2 py-2.5">{s.total_courses}</td>
-                  <td className="px-2 py-2.5">{s.completed_courses}</td>
-                  <td className="px-2 py-2.5">{s.pending_courses}</td>
+        <SectionCard
+          title="代表培训情况"
+          description="查看名下代表课程完成进度；备案考试通过后自动推进备案状态"
+        >
+          <div className="overflow-x-auto">
+            <table className="cso-table">
+              <thead>
+                <tr>
+                  <th>代表</th>
+                  <th>课程总数</th>
+                  <th>已完成</th>
+                  <th>待完成</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+              </thead>
+              <tbody>
+                {trainStats.map((s) => (
+                  <tr key={s.representative_id}>
+                    <td>{s.rep_name}</td>
+                    <td>{s.total_courses}</td>
+                    <td>{s.completed_courses}</td>
+                    <td>{s.pending_courses}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </SectionCard>
       )}
 
       {tab === "reports" && (
         <section className="grid gap-4 lg:grid-cols-2">
-          <form className="cso-card space-y-3 p-5" onSubmit={submitReport}>
-            <h2 className="text-lg font-semibold">提交合规报告</h2>
+          <form className="cso-card space-y-3 p-6" onSubmit={submitReport}>
+            <h2 className="cso-page-title">提交合规报告</h2>
+            <p className="cso-page-desc">按周期提交合规报告</p>
             <input className="cso-input" name="title" placeholder="报告标题" required />
             <input className="cso-input" name="period" placeholder="周期，如 2026-Q1" required />
-            <textarea className="cso-input min-h-28" name="content" placeholder="报告内容" />
+            <textarea className="cso-input min-h-28 py-2" name="content" placeholder="报告内容" />
             <button className="cso-btn-primary">提交</button>
           </form>
-          <div className="cso-card p-5">
-            <h2 className="mb-3 text-lg font-semibold">已提交报告</h2>
+          <div className="cso-card p-6">
+            <h2 className="cso-page-title mb-3">已提交报告</h2>
             <ul className="space-y-2 text-sm">
               {reports.map((r) => (
-                <li key={r.id} className="flex items-center justify-between border-b border-slate-100 py-2">
+                <li
+                  key={r.id}
+                  className="flex items-center justify-between border-b border-[var(--border)] py-3 last:border-0"
+                >
                   <span>
                     {r.title} · {r.period}
                   </span>
@@ -483,8 +486,8 @@ export default function AgentPage() {
       )}
 
       {showCreateFiling && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4">
-          <form className="cso-card w-full max-w-lg space-y-3 p-6" onSubmit={onCreateFiling}>
+        <Modal onClose={() => setShowCreateFiling(false)}>
+          <form className="space-y-3" onSubmit={onCreateFiling}>
             <h3 className="text-lg font-semibold">新增代表备案</h3>
             <input className="cso-input" name="name" placeholder="姓名" required />
             <input className="cso-input" name="id_card" placeholder="身份证号" required />
@@ -507,12 +510,12 @@ export default function AgentPage() {
               <button className="cso-btn-primary">保存</button>
             </div>
           </form>
-        </div>
+        </Modal>
       )}
 
       {showMeetingForm && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4">
-          <form className="cso-card max-h-[90vh] w-full max-w-xl space-y-3 overflow-y-auto p-6" onSubmit={onCreateMeeting}>
+        <Modal onClose={() => setShowMeetingForm(false)} wide>
+          <form className="space-y-3" onSubmit={onCreateMeeting}>
             <h3 className="text-lg font-semibold">学术会议申请</h3>
             <input className="cso-input" name="title" placeholder="会议名称" required />
             <select className="cso-input" name="meeting_type" defaultValue="学术研讨会">
@@ -534,12 +537,12 @@ export default function AgentPage() {
               ))}
             </select>
             <textarea
-              className="cso-input min-h-20"
+              className="cso-input min-h-20 py-2"
               name="attendees"
               placeholder="参与代表，逗号分隔，如：杨明,何秀英,罗磊"
             />
-            <textarea className="cso-input min-h-20" name="purpose" placeholder="申请事由 / 会议目的" />
-            <label className="flex items-center gap-2 text-sm text-slate-600">
+            <textarea className="cso-input min-h-20 py-2" name="purpose" placeholder="申请事由 / 会议目的" />
+            <label className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
               <input type="checkbox" name="submit" value="1" defaultChecked />
               创建后直接提交审批（否则为「计划中」）
             </label>
@@ -550,64 +553,64 @@ export default function AgentPage() {
               <button className="cso-btn-primary">保存申请</button>
             </div>
           </form>
-        </div>
+        </Modal>
       )}
 
       {detail && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4">
-          <div className="cso-card w-full max-w-lg p-6">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">学术会议详情</h3>
-                <p className="mt-1 font-medium">{detail.title}</p>
-              </div>
-              <button className="cso-btn-secondary" onClick={() => setDetail(null)}>
-                Close
-              </button>
+        <Modal onClose={() => setDetail(null)}>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-semibold">学术会议详情</h3>
+              <p className="mt-1 font-medium">{detail.title}</p>
             </div>
-            <dl className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <dt className="text-slate-500">会议日期</dt>
-                <dd>{detail.meeting_date || "-"}</dd>
-              </div>
-              <div>
-                <dt className="text-slate-500">会议地点</dt>
-                <dd>{detail.location || "-"}</dd>
-              </div>
-              <div>
-                <dt className="text-slate-500">参与人数</dt>
-                <dd>{detail.attendees_count || 0} 人</dd>
-              </div>
-              <div>
-                <dt className="text-slate-500">会议预算</dt>
-                <dd>{detail.budget != null ? `¥${detail.budget.toLocaleString()}` : "-"}</dd>
-              </div>
-              <div className="col-span-2">
-                <dt className="text-slate-500">参与代表</dt>
-                <dd className="mt-1 flex flex-wrap gap-1">
-                  {(detail.attendees || []).map((a) => (
-                    <span key={a} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">
-                      {a}
-                    </span>
-                  ))}
-                  {!detail.attendees?.length && "-"}
-                </dd>
-              </div>
-              <div className="col-span-2">
-                <dt className="text-slate-500">会议状态</dt>
-                <dd className="mt-1">
-                  <StatusBadge status={detail.status} />
-                </dd>
-              </div>
-              {detail.summary && (
-                <div className="col-span-2">
-                  <dt className="text-slate-500">会议总结</dt>
-                  <dd>{detail.summary}</dd>
-                </div>
-              )}
-            </dl>
+            <button className="cso-btn-ghost h-8 px-2" onClick={() => setDetail(null)}>
+              ×
+            </button>
           </div>
-        </div>
+          <dl className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <dt className="text-[var(--muted-foreground)]">会议日期</dt>
+              <dd className="mt-1 font-medium">{detail.meeting_date || "-"}</dd>
+            </div>
+            <div>
+              <dt className="text-[var(--muted-foreground)]">会议地点</dt>
+              <dd className="mt-1 font-medium">{detail.location || "-"}</dd>
+            </div>
+            <div>
+              <dt className="text-[var(--muted-foreground)]">参与人数</dt>
+              <dd className="mt-1 font-medium">{detail.attendees_count || 0} 人</dd>
+            </div>
+            <div>
+              <dt className="text-[var(--muted-foreground)]">会议预算</dt>
+              <dd className="mt-1 font-medium">
+                {detail.budget != null ? `¥ ${detail.budget.toLocaleString()}` : "-"}
+              </dd>
+            </div>
+            <div className="col-span-2">
+              <dt className="text-[var(--muted-foreground)]">参与代表</dt>
+              <dd className="mt-2 flex flex-wrap gap-1.5">
+                {(detail.attendees || []).map((a) => (
+                  <span key={a} className="rounded-md bg-[var(--muted)] px-2 py-0.5 text-xs">
+                    {a}
+                  </span>
+                ))}
+                {!detail.attendees?.length && "-"}
+              </dd>
+            </div>
+            <div className="col-span-2">
+              <dt className="text-[var(--muted-foreground)]">会议状态</dt>
+              <dd className="mt-1">
+                <StatusBadge status={detail.status} />
+              </dd>
+            </div>
+            {detail.summary && (
+              <div className="col-span-2">
+                <dt className="text-[var(--muted-foreground)]">会议总结</dt>
+                <dd className="mt-1">{detail.summary}</dd>
+              </div>
+            )}
+          </dl>
+        </Modal>
       )}
     </AppShell>
   );

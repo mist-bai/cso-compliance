@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Home, LogOut } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 import { AuthInfo, clearAuth, getAuth, roleHome } from "@/lib/api";
 
@@ -44,43 +45,72 @@ export default function AppShell({
 
   if (!auth) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-slate-500">
+      <div className="flex min-h-screen items-center justify-center text-[var(--muted-foreground)]">
         加载中…
       </div>
     );
   }
 
+  const tabCols =
+    tabs?.length === 5
+      ? "grid-cols-5"
+      : tabs?.length === 4
+        ? "grid-cols-4"
+        : tabs?.length === 3
+          ? "grid-cols-3"
+          : tabs?.length === 7
+            ? "grid-cols-7"
+            : tabs?.length === 9
+              ? "grid-cols-3 md:grid-cols-9"
+              : "grid-cols-2 md:grid-cols-4";
+
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-          <div>
-            <Link href="/" className="text-lg font-semibold text-slate-900">
-              代理商合规管理系统
+    <div className="min-h-screen bg-white">
+      <header className="border-b bg-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6">
+          <div className="flex items-start gap-2.5">
+            <Link
+              href="/"
+              className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md text-[var(--foreground)] hover:bg-[var(--muted)]"
+              aria-label="首页"
+            >
+              <Home size={18} strokeWidth={1.75} />
             </Link>
-            <div className="text-xs text-slate-500">
-              {subtitle || title} · {auth.display_name}
+            <div>
+              <Link href="/" className="text-base font-semibold tracking-tight text-[var(--foreground)]">
+                代理商合规管理系统
+              </Link>
+              <div className="text-xs text-[var(--muted-foreground)]">
+                {subtitle || title}
+                {auth.display_name ? ` · ${auth.display_name}` : ""}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
             {rightSlot}
             <button
-              className="cso-btn-secondary"
+              className="cso-btn-ghost h-9 px-2"
               onClick={() => {
                 clearAuth();
                 router.push("/");
               }}
+              title="退出"
             >
-              退出
+              <LogOut size={16} />
+              <span className="hidden sm:inline">退出</span>
             </button>
           </div>
         </div>
+      </header>
+
+      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
         {tabs && tabs.length > 0 && (
-          <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 pb-3">
+          <div className={`cso-tabs mb-6 ${tabCols}`}>
             {tabs.map((tab) => (
               <button
                 key={tab.key}
-                className={`cso-tab ${activeTab === tab.key ? "cso-tab-active" : ""}`}
+                type="button"
+                className={activeTab === tab.key ? "cso-tab-active" : "cso-tab"}
                 onClick={() => onTabChange?.(tab.key)}
               >
                 {tab.label}
@@ -88,8 +118,8 @@ export default function AppShell({
             ))}
           </div>
         )}
-      </header>
-      <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+        {children}
+      </div>
     </div>
   );
 }
@@ -99,6 +129,7 @@ export function StatusBadge({ status }: { status: string }) {
     已申请待考试: "bg-amber-100 text-amber-800",
     考试通过待备案: "bg-sky-100 text-sky-800",
     备案有效: "bg-emerald-100 text-emerald-800",
+    备案完成: "bg-emerald-100 text-emerald-800",
     备案撤销: "bg-rose-100 text-rose-800",
     计划中: "bg-slate-100 text-slate-700",
     待审批: "bg-amber-100 text-amber-800",
@@ -112,6 +143,8 @@ export function StatusBadge({ status }: { status: string }) {
     待考试: "bg-violet-100 text-violet-800",
     考试通过: "bg-emerald-100 text-emerald-800",
     考试未通过: "bg-rose-100 text-rose-800",
+    启用: "bg-emerald-100 text-emerald-800",
+    停用: "bg-slate-100 text-slate-600",
   };
   return (
     <span className={`cso-badge ${map[status] || "bg-slate-100 text-slate-700"}`}>

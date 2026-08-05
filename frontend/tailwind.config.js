@@ -5,20 +5,26 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          50: "#eef6ff",
-          100: "#d9ebff",
-          500: "#1677ff",
-          600: "#0958d9",
-          900: "#002766",
+          50: "#f8fafc",
+          100: "#f1f5f9",
+          500: "#0f172a",
+          600: "#020617",
+          900: "#020617",
         },
       },
       fontFamily: {
         sans: [
-          '"Noto Sans SC"',
           '"PingFang SC"',
           '"Microsoft YaHei"',
+          '"Hiragino Sans GB"',
+          "ui-sans-serif",
+          "system-ui",
           "sans-serif",
         ],
+      },
+      borderRadius: {
+        lg: "0.625rem",
+        md: "0.5rem",
       },
     },
   },

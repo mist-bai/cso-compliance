@@ -49,35 +49,33 @@ const portals = [
 
 export default function HomePage() {
   return (
-    <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-10">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-12">
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+        <h1 className="text-4xl font-bold tracking-tight text-[var(--foreground)]">
           代理商合规管理系统
         </h1>
-        <p className="mt-3 text-slate-500">请选择您的角色入口</p>
+        <p className="mt-4 text-lg text-[var(--muted-foreground)]">请选择您的角色入口</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid w-full max-w-6xl gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {portals.map((p) => {
           const Icon = p.icon;
           return (
-            <Link
-              key={p.href}
-              href={p.href}
-              className="cso-card group flex flex-col p-5 transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white">
-                <Icon size={20} />
-              </div>
-              <h2 className="text-lg font-semibold text-slate-900">{p.title}</h2>
-              <p className="mt-1 text-sm text-slate-500">{p.desc}</p>
-              <ul className="mt-4 space-y-1.5 text-sm text-slate-600">
-                {p.items.map((item) => (
-                  <li key={item}>• {item}</li>
-                ))}
-              </ul>
-              <div className="mt-auto pt-5 text-sm font-medium text-brand-600 group-hover:underline">
-                进入 →
+            <Link key={p.href} href={p.href} className="block h-full">
+              <div className="cso-card-hover flex h-full flex-col p-6">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--muted)] text-[var(--foreground)]">
+                  <Icon size={22} strokeWidth={1.75} />
+                </div>
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">{p.title}</h2>
+                <p className="mt-1 text-sm text-[var(--muted-foreground)]">{p.desc}</p>
+                <ul className="mt-4 space-y-2 text-sm text-[var(--muted-foreground)]">
+                  {p.items.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[var(--muted-foreground)]" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </Link>
           );

@@ -2,11 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 严格对齐秒悟原型（shadcn light theme 令牌） */
 :root {
-  --cso-primary: #1677ff;
-  --cso-bg: #f4f6f9;
-  --cso-card: #ffffff;
-  --cso-ink: #0f172a;
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --primary: #0f172a;
+  --primary-foreground: #f8fafc;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #0f172a;
+  --radius: 0.625rem;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 html,
@@ -16,44 +30,144 @@ body {
 
 body {
   margin: 0;
-  color: var(--cso-ink);
-  background:
-    radial-gradient(1200px 500px at 10% -10%, #dbeafe 0%, transparent 55%),
-    radial-gradient(900px 420px at 90% 0%, #e0f2fe 0%, transparent 50%),
-    var(--cso-bg);
-  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", ui-sans-serif,
+    system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  border-color: var(--border);
 }
 
 @layer components {
   .cso-card {
-    @apply rounded-xl border border-slate-200/80 bg-white shadow-sm;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--card-foreground);
+    box-shadow: var(--shadow);
+  }
+
+  .cso-card-hover {
+    @apply cso-card transition-shadow;
+  }
+  .cso-card-hover:hover {
+    box-shadow: var(--shadow-lg);
   }
 
   .cso-btn {
-    @apply inline-flex items-center justify-center rounded-lg px-3.5 py-2 text-sm font-medium transition;
+    @apply inline-flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md px-4 text-sm font-medium transition-colors;
   }
 
   .cso-btn-primary {
-    @apply cso-btn bg-slate-900 text-white hover:bg-slate-800;
+    @apply cso-btn text-[var(--primary-foreground)];
+    background: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+  .cso-btn-primary:hover {
+    opacity: 0.9;
   }
 
   .cso-btn-secondary {
-    @apply cso-btn border border-slate-200 bg-white text-slate-700 hover:bg-slate-50;
+    @apply cso-btn border bg-white;
+    color: var(--foreground);
+    border-color: var(--border);
+  }
+  .cso-btn-secondary:hover {
+    background: var(--muted);
+  }
+
+  .cso-btn-ghost {
+    @apply cso-btn bg-transparent;
+    color: var(--muted-foreground);
+  }
+  .cso-btn-ghost:hover {
+    background: var(--muted);
+    color: var(--foreground);
   }
 
   .cso-input {
-    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20;
+    @apply flex h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-sm outline-none transition-colors;
+    border-color: var(--input);
+    color: var(--foreground);
+  }
+  .cso-input::placeholder {
+    color: var(--muted-foreground);
+  }
+  .cso-input:focus {
+    box-shadow: 0 0 0 1px var(--ring);
+  }
+
+  /* 分段 Tabs：灰底轨道 + 白色激活块（对齐原型） */
+  .cso-tabs {
+    @apply grid h-9 w-full items-center gap-1 rounded-lg p-1;
+    background: var(--muted);
+    color: var(--muted-foreground);
   }
 
   .cso-tab {
-    @apply rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100;
+    @apply inline-flex h-7 items-center justify-center whitespace-nowrap rounded-md px-3 text-sm font-medium transition-all;
+    color: var(--muted-foreground);
+  }
+  .cso-tab:hover {
+    color: var(--foreground);
   }
 
   .cso-tab-active {
-    @apply bg-slate-900 text-white hover:bg-slate-900;
+    @apply cso-tab;
+    background: #ffffff;
+    color: var(--foreground);
+    box-shadow: var(--shadow);
   }
 
   .cso-badge {
-    @apply inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .cso-table {
+    @apply w-full caption-bottom text-sm;
+  }
+  .cso-table thead {
+    color: var(--muted-foreground);
+  }
+  .cso-table th {
+    @apply h-10 px-3 text-left align-middle font-medium;
+  }
+  .cso-table td {
+    @apply px-3 py-3 align-middle;
+  }
+  .cso-table tbody tr {
+    border-bottom: 1px solid var(--border);
+  }
+  .cso-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .cso-page-title {
+    @apply text-base font-semibold tracking-tight;
+    color: var(--foreground);
+  }
+  .cso-page-desc {
+    @apply text-sm;
+    color: var(--muted-foreground);
+  }
+
+  .cso-section-head {
+    @apply mb-4 flex flex-wrap items-start justify-between gap-3;
+  }
+
+  .cso-toolbar {
+    @apply mb-4 flex flex-wrap items-center gap-3;
+  }
+
+  .cso-modal-mask {
+    @apply fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4;
+  }
+
+  .cso-modal {
+    @apply cso-card max-h-[90vh] w-full overflow-y-auto p-6;
   }
 }

@@ -94,7 +94,7 @@ export default function CoursesPage() {
       {error && <p className="mb-4 text-sm text-rose-600">{error}</p>}
 
       {tab === "list" && (
-        <section className="cso-card p-5">
+        <section className="cso-card p-6">
           <div className="mb-4 flex flex-wrap gap-3">
             <input
               className="cso-input max-w-xs"
@@ -106,22 +106,22 @@ export default function CoursesPage() {
               查询
             </button>
           </div>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">课程名称</th>
-                <th className="px-2 py-2 text-left">时长(分钟)</th>
-                <th className="px-2 py-2 text-left">是否考试</th>
-                <th className="px-2 py-2 text-left">题目数</th>
-                <th className="px-2 py-2 text-left">学习人次</th>
-                <th className="px-2 py-2 text-left">通过比例</th>
-                <th className="px-2 py-2 text-left">发布日期</th>
+                <th>课程名称</th>
+                <th>时长(分钟)</th>
+                <th>是否考试</th>
+                <th>题目数</th>
+                <th>学习人次</th>
+                <th>通过比例</th>
+                <th>发布日期</th>
               </tr>
             </thead>
             <tbody>
               {courses.map((c) => (
-                <tr key={c.id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">
+                <tr key={c.id} >
+                  <td>
                     {c.name}
                     {c.is_compliance && (
                       <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
@@ -129,14 +129,14 @@ export default function CoursesPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-2 py-2.5">{c.duration_minutes}</td>
-                  <td className="px-2 py-2.5">{c.has_exam ? "是" : "否"}</td>
-                  <td className="px-2 py-2.5">{c.question_count}</td>
-                  <td className="px-2 py-2.5">{c.learner_count}</td>
-                  <td className="px-2 py-2.5">
+                  <td>{c.duration_minutes}</td>
+                  <td>{c.has_exam ? "是" : "否"}</td>
+                  <td>{c.question_count}</td>
+                  <td>{c.learner_count}</td>
+                  <td>
                     {c.pass_rate != null ? `${c.pass_rate}%` : "-"}
                   </td>
-                  <td className="px-2 py-2.5">{c.published_on || "-"}</td>
+                  <td>{c.published_on || "-"}</td>
                 </tr>
               ))}
             </tbody>
@@ -150,33 +150,33 @@ export default function CoursesPage() {
             <div key={c.id} className="cso-card p-4">
               <div className="text-sm font-medium">{c.name}</div>
               <div className="mt-3 text-2xl font-semibold">{c.learner_count}</div>
-              <div className="text-xs text-slate-500">学习人次 · 通过率 {c.pass_rate ?? 0}%</div>
+              <div className="text-xs text-[var(--muted-foreground)]">学习人次 · 通过率 {c.pass_rate ?? 0}%</div>
             </div>
           ))}
         </section>
       )}
 
       {tab === "reps" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 font-semibold">代表培训情况</h2>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">代表培训情况</h2>
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">代表</th>
-                <th className="px-2 py-2 text-left">课程总数</th>
-                <th className="px-2 py-2 text-left">已完成</th>
-                <th className="px-2 py-2 text-left">待完成</th>
-                <th className="px-2 py-2 text-left">进度</th>
+                <th>代表</th>
+                <th>课程总数</th>
+                <th>已完成</th>
+                <th>待完成</th>
+                <th>进度</th>
               </tr>
             </thead>
             <tbody>
               {stats.map((s) => (
-                <tr key={s.representative_id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{s.rep_name}</td>
-                  <td className="px-2 py-2.5">{s.total_courses}</td>
-                  <td className="px-2 py-2.5">{s.completed_courses}</td>
-                  <td className="px-2 py-2.5">{s.pending_courses}</td>
-                  <td className="px-2 py-2.5">
+                <tr key={s.representative_id} >
+                  <td>{s.rep_name}</td>
+                  <td>{s.total_courses}</td>
+                  <td>{s.completed_courses}</td>
+                  <td>{s.pending_courses}</td>
+                  <td>
                     <StatusBadge
                       status={
                         s.pending_courses === 0 ? "考试通过" : s.completed_courses > 0 ? "学习中" : "未开始"
@@ -191,9 +191,9 @@ export default function CoursesPage() {
       )}
 
       {showCreate && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4">
+        <div className="cso-modal-mask">
           <form className="cso-card w-full max-w-lg space-y-3 p-6" onSubmit={createCourse}>
-            <h3 className="text-lg font-semibold">新建课程</h3>
+            <h3 className="cso-page-title">新建课程</h3>
             <input className="cso-input" name="name" placeholder="课程名称" required />
             <input className="cso-input" name="description" placeholder="课程描述" />
             <input

@@ -204,33 +204,33 @@ export default function RepPage() {
 
       {tab === "todo" && (
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="cso-card p-5">
-            <h3 className="font-semibold">我的备案信息</h3>
-            <p className="mt-3 text-2xl font-semibold text-emerald-700">
+          <div className="cso-card p-6">
+            <h3 className="text-sm font-medium text-[var(--muted-foreground)]">我的备案信息</h3>
+            <p className="mt-3 text-2xl font-semibold tracking-tight text-emerald-700">
               {activeFiling?.status || "暂无"}
             </p>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
               {activeFiling
                 ? `${activeFiling.factory_name} · ${activeFiling.valid_from} 至 ${activeFiling.valid_to}`
                 : "尚未创建备案"}
             </p>
           </div>
-          <div className="cso-card p-5">
-            <h3 className="font-semibold">拜访任务 · 本月</h3>
-            <p className="mt-3 text-2xl font-semibold">
+          <div className="cso-card p-6">
+            <h3 className="text-sm font-medium text-[var(--muted-foreground)]">拜访任务 · 本月</h3>
+            <p className="mt-3 text-2xl font-semibold tracking-tight">
               {monthVisit?.visit_count || 0}/{monthVisit?.target_count || 3} 次
             </p>
-            <p className="mt-2 text-sm text-slate-500">每月需完成 3 次拜访</p>
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">每月需完成 3 次拜访</p>
             <form onSubmit={addVisit} className="mt-4">
               <button className="cso-btn-primary">提交 1 次拜访</button>
             </form>
           </div>
-          <div className="cso-card p-5">
-            <h3 className="font-semibold">培训考试</h3>
-            <p className="mt-3 text-2xl font-semibold">
+          <div className="cso-card p-6">
+            <h3 className="text-sm font-medium text-[var(--muted-foreground)]">培训考试</h3>
+            <p className="mt-3 text-2xl font-semibold tracking-tight">
               {doneCourses.length}/{courses.length} 门
             </p>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
               {pendingCourses.length} 门课程待完成
             </p>
             <button className="cso-btn-secondary mt-4" onClick={() => setTab("training")}>
@@ -241,24 +241,24 @@ export default function RepPage() {
       )}
 
       {tab === "filings" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 text-lg font-semibold">备案明细</h2>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">备案明细</h2>
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">工厂</th>
-                <th className="px-2 py-2 text-left">有效期</th>
-                <th className="px-2 py-2 text-left">状态</th>
+                <th>工厂</th>
+                <th>有效期</th>
+                <th>状态</th>
               </tr>
             </thead>
             <tbody>
               {filings.map((f) => (
-                <tr key={f.id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{f.factory_name}</td>
-                  <td className="px-2 py-2.5">
+                <tr key={f.id} >
+                  <td>{f.factory_name}</td>
+                  <td>
                     {f.valid_from} ~ {f.valid_to}
                   </td>
-                  <td className="px-2 py-2.5">
+                  <td>
                     <StatusBadge status={f.status} />
                   </td>
                 </tr>
@@ -269,24 +269,24 @@ export default function RepPage() {
       )}
 
       {tab === "visits" && (
-        <section className="cso-card p-5">
-          <h2 className="mb-3 text-lg font-semibold">拜访明细</h2>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+        <section className="cso-card p-6">
+          <h2 className="cso-page-title mb-1">拜访明细</h2>
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">周期</th>
-                <th className="px-2 py-2 text-left">次数</th>
-                <th className="px-2 py-2 text-left">目标</th>
-                <th className="px-2 py-2 text-left">完成率</th>
+                <th>周期</th>
+                <th>次数</th>
+                <th>目标</th>
+                <th>完成率</th>
               </tr>
             </thead>
             <tbody>
               {visits.map((v) => (
-                <tr key={v.id} className="border-b border-slate-100">
-                  <td className="px-2 py-2.5">{v.period}</td>
-                  <td className="px-2 py-2.5">{v.visit_count}</td>
-                  <td className="px-2 py-2.5">{v.target_count}</td>
-                  <td className="px-2 py-2.5">{v.completion_rate}%</td>
+                <tr key={v.id} >
+                  <td>{v.period}</td>
+                  <td>{v.visit_count}</td>
+                  <td>{v.target_count}</td>
+                  <td>{v.completion_rate}%</td>
                 </tr>
               ))}
             </tbody>
@@ -300,21 +300,21 @@ export default function RepPage() {
             <div key={m.id} className="cso-card flex items-center justify-between p-4">
               <div>
                 <div className="font-medium">{m.title}</div>
-                <div className="text-sm text-slate-500">{m.meeting_date || "日期待定"}</div>
+                <div className="text-sm text-[var(--muted-foreground)]">{m.meeting_date || "日期待定"}</div>
               </div>
               <StatusBadge status={m.status} />
             </div>
           ))}
           {meetings.length === 0 && (
-            <div className="cso-card p-8 text-center text-slate-500">暂无会议参与记录</div>
+            <div className="cso-card p-8 text-center text-[var(--muted-foreground)]">暂无会议参与记录</div>
           )}
         </section>
       )}
 
       {tab === "training" && (
         <section className="space-y-6">
-          <div className="cso-card p-5">
-            <h3 className="mb-3 text-lg font-semibold">待完成培训</h3>
+          <div className="cso-card p-6">
+            <h3 className="cso-page-title mb-1">待完成培训</h3>
             <div className="space-y-3">
               {pendingCourses.map((c) => {
                 const e = enrollMap.get(c.id);
@@ -327,7 +327,7 @@ export default function RepPage() {
                           <span className="ml-2 text-xs text-amber-700">备案考试</span>
                         )}
                       </div>
-                      <div className="text-sm text-slate-500">
+                      <div className="text-sm text-[var(--muted-foreground)]">
                         时长：{c.duration_minutes} 分钟
                         {e ? ` · ${e.status}` : " · 未开始"}
                         {e?.score != null ? ` · ${e.score}/${e.max_score}` : ""}
@@ -347,12 +347,12 @@ export default function RepPage() {
                 );
               })}
               {pendingCourses.length === 0 && (
-                <p className="text-sm text-slate-500">暂无待完成课程</p>
+                <p className="text-sm text-[var(--muted-foreground)]">暂无待完成课程</p>
               )}
             </div>
           </div>
-          <div className="cso-card p-5">
-            <h3 className="mb-3 text-lg font-semibold">已完成培训</h3>
+          <div className="cso-card p-6">
+            <h3 className="cso-page-title mb-1">已完成培训</h3>
             <ul className="space-y-2 text-sm">
               {doneCourses.map((c) => {
                 const e = enrollMap.get(c.id);
@@ -363,18 +363,18 @@ export default function RepPage() {
                   </li>
                 );
               })}
-              {doneCourses.length === 0 && <li className="text-slate-500">暂无</li>}
+              {doneCourses.length === 0 && <li className="text-[var(--muted-foreground)]">暂无</li>}
             </ul>
           </div>
         </section>
       )}
 
       {learning && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4">
+        <div className="cso-modal-mask">
           <div className="cso-card max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6">
-            <h3 className="text-lg font-semibold">{learning.name}</h3>
-            <p className="mt-2 text-sm text-slate-500">{learning.description}</p>
-            <pre className="mt-4 whitespace-pre-wrap rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
+            <h3 className="cso-page-title">{learning.name}</h3>
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">{learning.description}</p>
+            <pre className="mt-4 whitespace-pre-wrap rounded-lg bg-slate-50 p-4 text-sm text-[var(--foreground)]">
               {learning.content || "暂无学习内容"}
             </pre>
             <div className="mt-4 flex justify-end gap-2">
@@ -390,15 +390,15 @@ export default function RepPage() {
       )}
 
       {examCourse && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4">
+        <div className="cso-modal-mask">
           <form
             className="cso-card max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto p-6"
             onSubmit={submitExam}
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold">{examCourse.name} · 考试</h3>
-                <p className="text-sm text-slate-500">及格分 {examCourse.is_compliance ? 60 : 60}</p>
+                <h3 className="cso-page-title">{examCourse.name} · 考试</h3>
+                <p className="text-sm text-[var(--muted-foreground)]">及格分 {examCourse.is_compliance ? 60 : 60}</p>
               </div>
               <button type="button" className="cso-btn-secondary" onClick={() => setExamCourse(null)}>
                 关闭

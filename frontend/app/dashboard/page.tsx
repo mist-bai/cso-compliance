@@ -78,7 +78,7 @@ export default function DashboardPage() {
             ["待考试", summary.pending_exam],
           ].map(([label, value]) => (
             <div key={String(label)} className="cso-card p-4">
-              <div className="text-xs text-slate-500">{label}</div>
+              <div className="text-xs text-[var(--muted-foreground)]">{label}</div>
               <div className="mt-1 text-2xl font-semibold">{value}</div>
             </div>
           ))}
@@ -86,7 +86,7 @@ export default function DashboardPage() {
       )}
 
       {tab === "provider" && (
-        <section className="cso-card p-5">
+        <section className="cso-card p-6">
           <div className="mb-4 flex flex-wrap gap-3">
             <input
               className="cso-input max-w-xs"
@@ -101,26 +101,26 @@ export default function DashboardPage() {
               应用筛选
             </button>
           </div>
-          <table className="min-w-full text-sm">
-            <thead className="border-b text-slate-500">
+          <table className="cso-table">
+            <thead>
               <tr>
-                <th className="px-2 py-2 text-left">服务商</th>
-                <th className="px-2 py-2 text-left">代表数</th>
-                <th className="px-2 py-2 text-left">有效备案</th>
-                <th className="px-2 py-2 text-left">拜访总量</th>
-                <th className="px-2 py-2 text-left">会议数</th>
-                <th className="px-2 py-2 text-left">待培训</th>
+                <th>服务商</th>
+                <th>代表数</th>
+                <th>有效备案</th>
+                <th>拜访总量</th>
+                <th>会议数</th>
+                <th>待培训</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.provider_id} className="border-b border-slate-100">
+                <tr key={r.provider_id} >
                   <td className="px-2 py-2.5 font-medium">{r.provider_name}</td>
-                  <td className="px-2 py-2.5">{r.rep_count}</td>
-                  <td className="px-2 py-2.5">{r.active_filings}</td>
-                  <td className="px-2 py-2.5">{r.visit_total}</td>
-                  <td className="px-2 py-2.5">{r.meeting_count}</td>
-                  <td className="px-2 py-2.5">{r.training_pending}</td>
+                  <td>{r.rep_count}</td>
+                  <td>{r.active_filings}</td>
+                  <td>{r.visit_total}</td>
+                  <td>{r.meeting_count}</td>
+                  <td>{r.training_pending}</td>
                 </tr>
               ))}
             </tbody>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
       )}
 
       {tab !== "provider" && (
-        <section className="cso-card p-8 text-center text-slate-500">
+        <section className="cso-card p-8 text-center text-[var(--muted-foreground)]">
           {tab === "rep" && "代表合规监控图：后续接入拜访达标率与备案异常分布。"}
           {tab === "meeting" && "会议合规看板：后续接入审批时效、费用超标、总结缺失等指标。"}
           {tab === "training" && "培训考试统计：后续对接誉学院成绩与完成率。"}
