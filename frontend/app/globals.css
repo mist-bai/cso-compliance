@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cso-primary: #1677ff;
+  --cso-bg: #f4f6f9;
+  --cso-card: #ffffff;
+  --cso-ink: #0f172a;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--cso-ink);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #dbeafe 0%, transparent 55%),
+    radial-gradient(900px 420px at 90% 0%, #e0f2fe 0%, transparent 50%),
+    var(--cso-bg);
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+@layer components {
+  .cso-card {
+    @apply rounded-xl border border-slate-200/80 bg-white shadow-sm;
+  }
+
+  .cso-btn {
+    @apply inline-flex items-center justify-center rounded-lg px-3.5 py-2 text-sm font-medium transition;
+  }
+
+  .cso-btn-primary {
+    @apply cso-btn bg-slate-900 text-white hover:bg-slate-800;
+  }
+
+  .cso-btn-secondary {
+    @apply cso-btn border border-slate-200 bg-white text-slate-700 hover:bg-slate-50;
+  }
+
+  .cso-input {
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20;
+  }
+
+  .cso-tab {
+    @apply rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100;
+  }
+
+  .cso-tab-active {
+    @apply bg-slate-900 text-white hover:bg-slate-900;
+  }
+
+  .cso-badge {
+    @apply inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+}
