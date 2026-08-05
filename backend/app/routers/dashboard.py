@@ -31,6 +31,19 @@ def _compliance_user():
     )
 
 
+def _quarter_periods(quarter: str | None) -> list[str] | None:
+    """2026Q1 -> ['2026-01','2026-02','2026-03']"""
+    if not quarter or len(quarter) < 6 or "Q" not in quarter.upper():
+        return None
+    try:
+        year = quarter[:4]
+        qn = int(quarter.upper().split("Q")[1])
+        start = (qn - 1) * 3 + 1
+        return [f"{year}-{m:02d}" for m in range(start, start + 3)]
+    except (ValueError, IndexError):
+        return None
+
+
 @router.get("/providers", response_model=list[DashboardProviderRow])
 def provider_cockpit(
     db: Annotated[Session, Depends(get_db)],
@@ -44,10 +57,12 @@ def provider_cockpit(
         ),
     ],
     q: str | None = None,
+    quarter: str | None = None,
 ):
     providers = db.query(ServiceProvider).order_by(ServiceProvider.id).all()
     if q:
         providers = [p for p in providers if q in p.name]
+    periods = _quarter_periods(quarter)
 
     rows: list[DashboardProviderRow] = []
     for p in providers:
@@ -80,18 +95,26 @@ def provider_cockpit(
             .scalar()
             or 0
         )
-        visit_total = (
-            db.query(func.coalesce(func.sum(VisitRecord.visit_count), 0))
-            .filter(VisitRecord.provider_id == p.id)
-            .scalar()
-            or 0
+        visit_q = db.query(func.coalesce(func.sum(VisitRecord.visit_count), 0)).filter(
+            VisitRecord.provider_id == p.id
         )
-        meeting_count = (
-            db.query(func.count(AcademicMeeting.id))
-            .filter(AcademicMeeting.provider_id == p.id)
-            .scalar()
-            or 0
+        if periods:
+            visit_q = visit_q.filter(VisitRecord.period.in_(periods))
+        visit_total = visit_q.scalar() or 0
+        meeting_q = db.query(func.count(AcademicMeeting.id)).filter(
+            AcademicMeeting.provider_id == p.id
         )
+        if periods:
+            # 会议按 meeting_date 所属月份粗筛
+            from sqlalchemy import extract
+
+            year = int(periods[0][:4])
+            months = [int(per.split("-")[1]) for per in periods]
+            meeting_q = meeting_q.filter(
+                extract("year", AcademicMeeting.meeting_date) == year,
+                extract("month", AcademicMeeting.meeting_date).in_(months),
+            )
+        meeting_count = meeting_q.scalar() or 0
         # 待培训：该服务商下代表中，存在未通过/未完成课程的人数
         provider_rep_ids = [
             r.id

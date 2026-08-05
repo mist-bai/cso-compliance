@@ -68,12 +68,15 @@ export default function AdminPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [filings, setFilings] = useState<any[]>([]);
+  const [reps, setReps] = useState<
+    { id: number; name: string; id_card: string; agent_name?: string; is_active: boolean; phone?: string }[]
+  >([]);
   const [error, setError] = useState("");
   const [syncMsg, setSyncMsg] = useState("");
 
   async function load() {
     try {
-      const [a, p, fac, pr, h, f, r, m, fi] = await Promise.all([
+      const [a, p, fac, pr, h, f, r, m, fi, repList] = await Promise.all([
         api<Agent[]>("/api/agents"),
         api<Provider[]>("/api/providers"),
         api<Factory[]>("/api/factories"),
@@ -83,6 +86,9 @@ export default function AdminPage() {
         api<Report[]>("/api/reports"),
         api<Meeting[]>("/api/meetings"),
         api<any[]>("/api/filings"),
+        api<
+          { id: number; name: string; id_card: string; agent_name?: string; is_active: boolean; phone?: string }[]
+        >("/api/representatives"),
       ]);
       setAgents(a);
       setProviders(p);
@@ -93,6 +99,7 @@ export default function AdminPage() {
       setReports(r);
       setMeetings(m);
       setFilings(fi);
+      setReps(repList);
       setError("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "加载失败");
@@ -233,6 +240,31 @@ export default function AdminPage() {
     await load();
   }
 
+  async function createProvider(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    await api("/api/providers", {
+      method: "POST",
+      body: JSON.stringify({
+        name: fd.get("name"),
+        code: fd.get("code") || null,
+        region: fd.get("region") || null,
+        contact: fd.get("contact") || null,
+        phone: fd.get("phone") || null,
+      }),
+    });
+    e.currentTarget.reset();
+    await load();
+  }
+
+  async function toggleRep(id: number, is_active: boolean) {
+    await api(`/api/representatives/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ is_active }),
+    });
+    await load();
+  }
+
   async function advanceFiling(id: number, status: string) {
     await api(`/api/filings/${id}/status`, {
       method: "PATCH",
@@ -318,32 +350,43 @@ export default function AdminPage() {
       )}
 
       {tab === "providers" && (
-        <section className="cso-card p-6">
-          <h2 className="cso-page-title mb-1">服务商管理</h2>
-          <p className="mb-3 text-sm text-[var(--muted-foreground)]">
-            来源：oracle_bridge.ORG_MAP + BI 发薪机构 MAT_YWGS（大连博道/天津博达/安徽博鑫/北京塞升）
-          </p>
-          <table className="cso-table">
-            <thead>
-              <tr>
-                <th>编码</th>
-                <th>名称</th>
-                <th>区域</th>
-                <th>来源</th>
-              </tr>
-            </thead>
-            <tbody>
-              {providers.map((p) => (
-                <tr key={p.id} >
-                  <td>{p.code}</td>
-                  <td>{p.name}</td>
-                  <td>{p.region}</td>
-                  <td className="px-2 py-2.5 text-xs text-[var(--muted-foreground)]">{p.source}</td>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <form className="cso-card space-y-3 p-5" onSubmit={createProvider}>
+            <h2 className="font-semibold">新增服务商</h2>
+            <input className="cso-input" name="name" placeholder="服务商名称" required />
+            <input className="cso-input" name="code" placeholder="编码" />
+            <input className="cso-input" name="region" placeholder="区域" />
+            <input className="cso-input" name="contact" placeholder="联系人" />
+            <input className="cso-input" name="phone" placeholder="电话" />
+            <button className="cso-btn-primary">保存</button>
+          </form>
+          <section className="cso-card overflow-x-auto p-6 lg:col-span-2">
+            <h2 className="cso-page-title mb-1">服务商管理</h2>
+            <p className="mb-3 text-sm text-[var(--muted-foreground)]">
+              来源：oracle_bridge.ORG_MAP + BI 发薪机构 MAT_YWGS（大连博道/天津博达/安徽博鑫/北京塞升）
+            </p>
+            <table className="cso-table">
+              <thead>
+                <tr>
+                  <th>编码</th>
+                  <th>名称</th>
+                  <th>区域</th>
+                  <th>来源</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+              </thead>
+              <tbody>
+                {providers.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.code}</td>
+                    <td>{p.name}</td>
+                    <td>{p.region}</td>
+                    <td className="text-xs text-[var(--muted-foreground)]">{p.source}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </div>
       )}
 
       {tab === "factories" && (
@@ -468,60 +511,100 @@ export default function AdminPage() {
       )}
 
       {tab === "reps" && (
-        <section className="cso-card p-6">
-          <h2 className="cso-page-title mb-1">代表备案管理</h2>
-          <table className="cso-table">
-            <thead>
-              <tr>
-                <th>姓名</th>
-                <th>代理商</th>
-                <th>工厂</th>
-                <th>状态</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filings.map((f) => (
-                <tr key={f.id} >
-                  <td>{f.rep_name}</td>
-                  <td>{f.agent_name}</td>
-                  <td>{f.factory_name}</td>
-                  <td>
-                    <StatusBadge status={f.status} />
-                  </td>
-                  <td>
-                    <div className="flex flex-wrap gap-1">
-                      {f.status === "已申请待考试" && (
+        <div className="space-y-4">
+          <section className="cso-card p-6">
+            <h2 className="cso-page-title mb-1">代表账号</h2>
+            <div className="overflow-x-auto">
+              <table className="cso-table">
+                <thead>
+                  <tr>
+                    <th>姓名</th>
+                    <th>身份证</th>
+                    <th>代理商</th>
+                    <th>电话</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reps.map((r) => (
+                    <tr key={r.id}>
+                      <td>{r.name}</td>
+                      <td>{r.id_card}</td>
+                      <td>{r.agent_name}</td>
+                      <td>{r.phone || "-"}</td>
+                      <td>
+                        <StatusBadge status={r.is_active ? "启用" : "停用"} />
+                      </td>
+                      <td>
                         <button
-                          className="cso-btn-secondary"
-                          onClick={() => advanceFiling(f.id, "考试通过待备案")}
+                          className="cso-btn-secondary h-8"
+                          onClick={() => toggleRep(r.id, !r.is_active)}
                         >
-                          考试通过
+                          {r.is_active ? "停用" : "启用"}
                         </button>
-                      )}
-                      {f.status === "考试通过待备案" && (
-                        <button
-                          className="cso-btn-primary"
-                          onClick={() => advanceFiling(f.id, "备案有效")}
-                        >
-                          确认备案
-                        </button>
-                      )}
-                      {f.status !== "备案撤销" && (
-                        <button
-                          className="cso-btn-secondary"
-                          onClick={() => advanceFiling(f.id, "备案撤销")}
-                        >
-                          撤销
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <section className="cso-card p-6">
+            <h2 className="cso-page-title mb-1">代表备案管理</h2>
+            <table className="cso-table">
+              <thead>
+                <tr>
+                  <th>姓名</th>
+                  <th>代理商</th>
+                  <th>工厂</th>
+                  <th>状态</th>
+                  <th>操作</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+              </thead>
+              <tbody>
+                {filings.map((f) => (
+                  <tr key={f.id}>
+                    <td>{f.rep_name}</td>
+                    <td>{f.agent_name}</td>
+                    <td>{f.factory_name}</td>
+                    <td>
+                      <StatusBadge status={f.status} />
+                    </td>
+                    <td>
+                      <div className="flex flex-wrap gap-1">
+                        {f.status === "已申请待考试" && (
+                          <button
+                            className="cso-btn-secondary"
+                            onClick={() => advanceFiling(f.id, "考试通过待备案")}
+                          >
+                            考试通过
+                          </button>
+                        )}
+                        {f.status === "考试通过待备案" && (
+                          <button
+                            className="cso-btn-primary"
+                            onClick={() => advanceFiling(f.id, "备案有效")}
+                          >
+                            确认备案
+                          </button>
+                        )}
+                        {f.status !== "备案撤销" && (
+                          <button
+                            className="cso-btn-secondary"
+                            onClick={() => advanceFiling(f.id, "备案撤销")}
+                          >
+                            撤销
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </div>
       )}
 
       {tab === "products" && (

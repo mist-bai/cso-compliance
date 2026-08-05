@@ -156,6 +156,11 @@ class RepCreate(BaseModel):
     phone: str | None = None
 
 
+class RepUpdate(BaseModel):
+    phone: str | None = None
+    is_active: bool | None = None
+
+
 class FilingOut(OrmModel):
     id: int
     representative_id: int

@@ -91,3 +91,26 @@ def reject_report(
     db.commit()
     db.refresh(row)
     return row
+
+
+@router.post("/{report_id}/resubmit", response_model=ReportOut)
+def resubmit_report(
+    report_id: int,
+    body: ReportCreate,
+    db: Annotated[Session, Depends(get_db)],
+    user: Annotated[User, Depends(require_roles(UserRole.AGENT.value))],
+):
+    row = db.get(ComplianceReport, report_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="报告不存在")
+    if row.agent_id != user.agent_id:
+        raise HTTPException(status_code=403, detail="无权操作")
+    if row.status != ReportStatus.REJECTED.value:
+        raise HTTPException(status_code=400, detail="仅已驳回报告可重新提交")
+    row.title = body.title
+    row.period = body.period
+    row.content = body.content
+    row.status = ReportStatus.SUBMITTED.value
+    db.commit()
+    db.refresh(row)
+    return row

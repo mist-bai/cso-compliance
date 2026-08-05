@@ -115,14 +115,17 @@ export default function DashboardPage() {
   const [meetingRows, setMeetingRows] = useState<MeetingRow[]>([]);
   const [trainStats, setTrainStats] = useState<TrainStat[]>([]);
   const [q, setQ] = useState("");
+  const [quarter, setQuarter] = useState("");
   const [error, setError] = useState("");
 
-  async function load(keyword = q) {
+  async function load(keyword = q, qtr = quarter) {
     try {
+      const providerQs = new URLSearchParams({
+        ...(keyword ? { q: keyword } : {}),
+        ...(qtr ? { quarter: qtr } : {}),
+      }).toString();
       const [p, s, c, reps, meetings, train] = await Promise.all([
-        api<ProviderRow[]>(
-          `/api/dashboard/providers${keyword ? `?q=${encodeURIComponent(keyword)}` : ""}`
-        ),
+        api<ProviderRow[]>(`/api/dashboard/providers${providerQs ? `?${providerQs}` : ""}`),
         api<Summary>("/api/dashboard/summary"),
         api<Charts>("/api/dashboard/charts"),
         api<RepRow[]>(
@@ -204,16 +207,40 @@ export default function DashboardPage() {
       {tab === "provider" && (
         <SectionCard title="服务商推广驾驶舱" description="按服务商汇总代表、备案、拜访与会议">
           <div className="cso-toolbar">
+            <label className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
+              季度
+              <select
+                className="cso-input w-auto"
+                value={quarter}
+                onChange={(e) => setQuarter(e.target.value)}
+              >
+                <option value="">全部季度</option>
+                {["2026Q1", "2026Q2", "2026Q3", "2026Q4", "2025Q1", "2025Q2", "2025Q3", "2025Q4"].map(
+                  (x) => (
+                    <option key={x} value={x}>
+                      {x}
+                    </option>
+                  )
+                )}
+              </select>
+            </label>
             <SearchInput
               className="max-w-xs"
               placeholder="搜索服务商名称..."
               value={q}
               onChange={setQ}
             />
-            <button className="cso-btn-secondary" onClick={() => { setQ(""); load(""); }}>
+            <button
+              className="cso-btn-secondary"
+              onClick={() => {
+                setQ("");
+                setQuarter("");
+                load("", "");
+              }}
+            >
               重置
             </button>
-            <button className="cso-btn-primary" onClick={() => load(q)}>
+            <button className="cso-btn-primary" onClick={() => load(q, quarter)}>
               应用筛选
             </button>
           </div>

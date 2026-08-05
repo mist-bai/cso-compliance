@@ -31,6 +31,7 @@ from app.schemas import (
     ProviderCreate,
     ProviderOut,
     RepOut,
+    RepUpdate,
 )
 from app.seed import sync_master_data
 
@@ -170,6 +171,31 @@ def list_representatives(
         item.agent_name = r.agent.name if r.agent else None
         out.append(item)
     return out
+
+
+@router.patch("/representatives/{rep_id}", response_model=RepOut)
+def update_representative(
+    rep_id: int,
+    body: RepUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_roles(UserRole.ADMIN.value))],
+):
+    row = db.get(Representative, rep_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="代表不存在")
+    data = body.model_dump(exclude_unset=True)
+    for key, value in data.items():
+        setattr(row, key, value)
+    if "is_active" in data:
+        for u in db.query(User).filter(
+            User.representative_id == rep_id, User.role == UserRole.REP.value
+        ):
+            u.is_active = bool(data["is_active"])
+    db.commit()
+    db.refresh(row)
+    item = RepOut.model_validate(row)
+    item.agent_name = row.agent.name if row.agent else None
+    return item
 
 
 @router.get("/hospitals", response_model=list[HospitalOut])

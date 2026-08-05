@@ -115,6 +115,7 @@ export default function AgentPage() {
   const [fees, setFees] = useState<Fee[]>([]);
   const [trainDetail, setTrainDetail] = useState<TrainStat | null>(null);
   const [reportDetail, setReportDetail] = useState<Report | null>(null);
+  const [resubmitReport, setResubmitReport] = useState<Report | null>(null);
   const [createLogin, setCreateLogin] = useState(true);
   const [budget, setBudget] = useState("");
 
@@ -314,6 +315,23 @@ export default function AgentPage() {
       }),
     });
     e.currentTarget.reset();
+    await load();
+  }
+
+  async function onResubmitReport(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!resubmitReport) return;
+    const fd = new FormData(e.currentTarget);
+    await api(`/api/reports/${resubmitReport.id}/resubmit`, {
+      method: "POST",
+      body: JSON.stringify({
+        title: fd.get("title"),
+        period: fd.get("period"),
+        content: fd.get("content"),
+      }),
+    });
+    setResubmitReport(null);
+    setInfo("报告已重新提交");
     await load();
   }
 
@@ -606,7 +624,20 @@ export default function AgentPage() {
                   >
                     {r.title} · {r.period}
                   </button>
-                  <StatusBadge status={r.status} />
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={r.status} />
+                    {r.status === "已驳回" && (
+                      <button
+                        className="cso-btn-secondary h-8"
+                        onClick={async () => {
+                          const detail = await api<Report>(`/api/reports/${r.id}`);
+                          setResubmitReport(detail);
+                        }}
+                      >
+                        重新提交
+                      </button>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -959,6 +990,37 @@ export default function AgentPage() {
               关闭
             </button>
           </div>
+        </Modal>
+      )}
+
+      {resubmitReport && (
+        <Modal onClose={() => setResubmitReport(null)}>
+          <form className="space-y-3" onSubmit={onResubmitReport}>
+            <h3 className="text-lg font-semibold">重新提交报告</h3>
+            <input
+              className="cso-input"
+              name="title"
+              defaultValue={resubmitReport.title}
+              required
+            />
+            <input
+              className="cso-input"
+              name="period"
+              defaultValue={resubmitReport.period}
+              required
+            />
+            <textarea
+              className="cso-input min-h-28 py-2"
+              name="content"
+              defaultValue={resubmitReport.content || ""}
+            />
+            <div className="flex justify-end gap-2">
+              <button type="button" className="cso-btn-secondary" onClick={() => setResubmitReport(null)}>
+                取消
+              </button>
+              <button className="cso-btn-primary">提交</button>
+            </div>
+          </form>
         </Modal>
       )}
 
