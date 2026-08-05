@@ -19,6 +19,7 @@ from app.models import (
 from app.schemas import (
     AgentCreate,
     AgentOut,
+    AgentUpdate,
     FactoryOut,
     FeeCreate,
     FeeOut,
@@ -106,6 +107,30 @@ def create_agent(
                 email=body.email,
             )
         )
+    db.commit()
+    db.refresh(row)
+    item = AgentOut.model_validate(row)
+    item.provider_name = row.provider.name if row.provider else None
+    return item
+
+
+@router.patch("/agents/{agent_id}", response_model=AgentOut)
+def update_agent(
+    agent_id: int,
+    body: AgentUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_roles(UserRole.ADMIN.value))],
+):
+    row = db.get(Agent, agent_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="代理商不存在")
+    data = body.model_dump(exclude_unset=True)
+    for key, value in data.items():
+        setattr(row, key, value)
+    # 停用/启用时同步代理商登录账号
+    if "is_active" in data:
+        for u in db.query(User).filter(User.agent_id == agent_id, User.role == UserRole.AGENT.value):
+            u.is_active = bool(data["is_active"])
     db.commit()
     db.refresh(row)
     item = AgentOut.model_validate(row)

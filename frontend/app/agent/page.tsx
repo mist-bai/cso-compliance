@@ -28,6 +28,18 @@ type Visit = {
   period: string;
   uploaded_on?: string;
   note?: string;
+  hospital_names?: string[];
+  event_count?: number;
+};
+
+type VisitEvent = {
+  id: number;
+  visit_date: string;
+  hospital_name?: string;
+  hospital_province?: string;
+  hospital_city?: string;
+  note?: string;
+  rep_name?: string;
 };
 
 type Meeting = {
@@ -88,6 +100,7 @@ export default function AgentPage() {
   const [showMeetingForm, setShowMeetingForm] = useState(false);
   const [detail, setDetail] = useState<Meeting | null>(null);
   const [visitDetail, setVisitDetail] = useState<Visit | null>(null);
+  const [visitEvents, setVisitEvents] = useState<VisitEvent[]>([]);
   const [editMeeting, setEditMeeting] = useState<Meeting | null>(null);
   const [editFiling, setEditFiling] = useState<Filing | null>(null);
 
@@ -210,8 +223,12 @@ export default function AgentPage() {
   }
 
   async function openVisit(id: number) {
-    const row = await api<Visit>(`/api/visits/${id}`);
+    const [row, events] = await Promise.all([
+      api<Visit>(`/api/visits/${id}`),
+      api<VisitEvent[]>(`/api/visits/${id}/events`),
+    ]);
     setVisitDetail(row);
+    setVisitEvents(events);
   }
 
   async function saveFilingEdit(e: FormEvent<HTMLFormElement>) {
@@ -376,6 +393,7 @@ export default function AgentPage() {
                   <th>代表姓名</th>
                   <th>服务商</th>
                   <th>拜访次数</th>
+                  <th>医院</th>
                   <th>完成率</th>
                   <th>统计周期</th>
                   <th>上传日期</th>
@@ -393,6 +411,9 @@ export default function AgentPage() {
                       >
                         {row.visit_count} 次
                       </button>
+                    </td>
+                    <td className="max-w-[12rem] truncate text-sm text-[var(--muted-foreground)]">
+                      {(row.hospital_names || []).join("、") || "-"}
                     </td>
                     <td>{row.completion_rate}%</td>
                     <td>{row.period}</td>
@@ -680,14 +701,20 @@ export default function AgentPage() {
       )}
 
       {visitDetail && (
-        <Modal onClose={() => setVisitDetail(null)}>
+        <Modal onClose={() => { setVisitDetail(null); setVisitEvents([]); }} wide>
           <div className="mb-4 flex items-start justify-between gap-3">
             <h3 className="text-lg font-semibold">拜访明细</h3>
-            <button className="cso-btn-ghost h-8 px-2" onClick={() => setVisitDetail(null)}>
+            <button
+              className="cso-btn-ghost h-8 px-2"
+              onClick={() => {
+                setVisitDetail(null);
+                setVisitEvents([]);
+              }}
+            >
               ×
             </button>
           </div>
-          <dl className="grid grid-cols-2 gap-4 text-sm">
+          <dl className="mb-4 grid grid-cols-2 gap-4 text-sm">
             <div>
               <dt className="text-[var(--muted-foreground)]">代表</dt>
               <dd className="mt-1 font-medium">{visitDetail.rep_name || "-"}</dd>
@@ -701,28 +728,44 @@ export default function AgentPage() {
               <dd className="mt-1 font-medium">{visitDetail.period}</dd>
             </div>
             <div>
-              <dt className="text-[var(--muted-foreground)]">上传日期</dt>
-              <dd className="mt-1 font-medium">{visitDetail.uploaded_on || "-"}</dd>
-            </div>
-            <div>
-              <dt className="text-[var(--muted-foreground)]">拜访次数</dt>
-              <dd className="mt-1 font-medium">{visitDetail.visit_count}</dd>
-            </div>
-            <div>
-              <dt className="text-[var(--muted-foreground)]">目标次数</dt>
-              <dd className="mt-1 font-medium">{visitDetail.target_count ?? "-"}</dd>
-            </div>
-            <div>
               <dt className="text-[var(--muted-foreground)]">完成率</dt>
               <dd className="mt-1 font-medium">
                 {visitDetail.completion_rate != null ? `${visitDetail.completion_rate}%` : "-"}
               </dd>
             </div>
-            <div className="col-span-2">
-              <dt className="text-[var(--muted-foreground)]">备注</dt>
-              <dd className="mt-1">{visitDetail.note || "无"}</dd>
-            </div>
           </dl>
+          <h4 className="mb-2 text-sm font-medium">单次拜访（{visitEvents.length}）</h4>
+          <div className="max-h-64 overflow-y-auto">
+            <table className="cso-table">
+              <thead>
+                <tr>
+                  <th>日期</th>
+                  <th>医院终端</th>
+                  <th>省市</th>
+                  <th>备注</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visitEvents.map((ev) => (
+                  <tr key={ev.id}>
+                    <td>{ev.visit_date}</td>
+                    <td>{ev.hospital_name || "未填写"}</td>
+                    <td>
+                      {[ev.hospital_province, ev.hospital_city].filter(Boolean).join(" ") || "-"}
+                    </td>
+                    <td>{ev.note || "-"}</td>
+                  </tr>
+                ))}
+                {visitEvents.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="text-[var(--muted-foreground)]">
+                      暂无医院明细（历史汇总数据可能未关联终端）
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </Modal>
       )}
 

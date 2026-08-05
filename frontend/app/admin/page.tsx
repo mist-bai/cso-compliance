@@ -156,6 +156,14 @@ export default function AdminPage() {
     await load();
   }
 
+  async function toggleAgent(id: number, is_active: boolean) {
+    await api(`/api/agents/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ is_active }),
+    });
+    await load();
+  }
+
   async function createFee(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -259,17 +267,28 @@ export default function AdminPage() {
                   <th>电话</th>
                   <th>邮箱</th>
                   <th>状态</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
                 {agents.map((a) => (
-                  <tr key={a.id} >
+                  <tr key={a.id}>
                     <td>{a.name}</td>
                     <td>{a.provider_name}</td>
                     <td>{a.contact}</td>
                     <td>{a.phone}</td>
                     <td>{a.email}</td>
-                    <td>{a.is_active ? "启用" : "停用"}</td>
+                    <td>
+                      <StatusBadge status={a.is_active ? "启用" : "停用"} />
+                    </td>
+                    <td>
+                      <button
+                        className="cso-btn-secondary h-8"
+                        onClick={() => toggleAgent(a.id, !a.is_active)}
+                      >
+                        {a.is_active ? "停用" : "启用"}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -201,6 +201,8 @@ class RepFiling(Base, TimestampMixin):
 
 
 class VisitRecord(Base, TimestampMixin):
+    """按月汇总的拜访统计。"""
+
     __tablename__ = "visit_records"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -213,6 +215,27 @@ class VisitRecord(Base, TimestampMixin):
     uploaded_on: Mapped[date | None] = mapped_column(Date, nullable=True)
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    representative: Mapped[Representative] = relationship()
+    events: Mapped[list[VisitEvent]] = relationship(back_populates="visit_record")
+
+
+class VisitEvent(Base, TimestampMixin):
+    """单次拜访明细（可关联医院终端）。"""
+
+    __tablename__ = "visit_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    visit_record_id: Mapped[int] = mapped_column(ForeignKey("visit_records.id"), index=True)
+    representative_id: Mapped[int] = mapped_column(ForeignKey("representatives.id"), index=True)
+    provider_id: Mapped[int] = mapped_column(ForeignKey("service_providers.id"))
+    agent_id: Mapped[int] = mapped_column(ForeignKey("agents.id"))
+    hospital_id: Mapped[int | None] = mapped_column(ForeignKey("hospitals.id"), nullable=True)
+    visit_date: Mapped[date] = mapped_column(Date, index=True)
+    period: Mapped[str] = mapped_column(String(16), index=True)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    visit_record: Mapped[VisitRecord] = relationship(back_populates="events")
+    hospital: Mapped[Hospital | None] = relationship()
     representative: Mapped[Representative] = relationship()
 
 

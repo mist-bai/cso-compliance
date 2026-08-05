@@ -24,6 +24,7 @@ from app.models import (
 from app.schemas import (
     CourseCreate,
     CourseOut,
+    CourseUpdate,
     EnrollmentOut,
     ExamResultOut,
     ExamSubmit,
@@ -96,6 +97,23 @@ def get_course(
     row = db.get(Course, course_id)
     if not row:
         raise HTTPException(status_code=404, detail="课程不存在")
+    return _course_out(db, row)
+
+
+@router.patch("/courses/{course_id}", response_model=CourseOut)
+def update_course(
+    course_id: int,
+    body: CourseUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_roles(UserRole.ADMIN.value, UserRole.ACADEMY.value))],
+):
+    row = db.get(Course, course_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="课程不存在")
+    for key, value in body.model_dump(exclude_unset=True).items():
+        setattr(row, key, value)
+    db.commit()
+    db.refresh(row)
     return _course_out(db, row)
 
 

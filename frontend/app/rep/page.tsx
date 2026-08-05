@@ -19,6 +19,25 @@ type Visit = {
   visit_count: number;
   target_count: number;
   completion_rate?: number;
+  hospital_names?: string[];
+  event_count?: number;
+};
+
+type Hospital = {
+  id: number;
+  name: string;
+  province?: string;
+  city?: string;
+};
+
+type VisitEvent = {
+  id: number;
+  visit_date: string;
+  hospital_name?: string;
+  hospital_province?: string;
+  hospital_city?: string;
+  note?: string;
+  period: string;
 };
 
 type Meeting = {
@@ -82,21 +101,29 @@ export default function RepPage() {
   const [examResult, setExamResult] = useState<string>("");
   const [summaryMeeting, setSummaryMeeting] = useState<Meeting | null>(null);
   const [summaryText, setSummaryText] = useState("");
+  const [hospitals, setHospitals] = useState<Hospital[]>([]);
+  const [hospitalId, setHospitalId] = useState("");
+  const [hospitalQ, setHospitalQ] = useState("");
+  const [events, setEvents] = useState<VisitEvent[]>([]);
 
   async function load() {
     try {
-      const [f, v, m, e, c] = await Promise.all([
+      const [f, v, m, e, c, h, ev] = await Promise.all([
         api<Filing[]>("/api/filings"),
         api<Visit[]>("/api/visits"),
         api<Meeting[]>("/api/meetings"),
         api<Enrollment[]>("/api/training/enrollments"),
         api<Course[]>("/api/training/courses"),
+        api<Hospital[]>("/api/hospitals"),
+        api<VisitEvent[]>("/api/visits/events"),
       ]);
       setFilings(f);
       setVisits(v);
       setMeetings(m);
       setEnrollments(e);
       setCourses(c);
+      setHospitals(h);
+      setEvents(ev);
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "加载失败");
@@ -130,13 +157,29 @@ export default function RepPage() {
   });
   const complianceCourse = courses.find((c) => c.is_compliance);
 
+  const filteredHospitals = useMemo(() => {
+    const list = hospitalQ
+      ? hospitals.filter((h) => h.name.includes(hospitalQ))
+      : hospitals;
+    return list.slice(0, 80);
+  }, [hospitals, hospitalQ]);
+
   async function addVisit(e: FormEvent) {
     e.preventDefault();
+    if (!hospitalId) {
+      setError("请选择拜访医院终端");
+      return;
+    }
     try {
       await api("/api/visits", {
         method: "POST",
-        body: JSON.stringify({ period: currentPeriod, visit_count: 1 }),
+        body: JSON.stringify({
+          period: currentPeriod,
+          visit_count: 1,
+          hospital_id: Number(hospitalId),
+        }),
       });
+      setError("");
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "提交失败");
@@ -241,8 +284,28 @@ export default function RepPage() {
             <p className="mt-3 text-2xl font-semibold tracking-tight">
               {monthVisit?.visit_count || 0}/{monthVisit?.target_count || 3} 次
             </p>
-            <p className="mt-2 text-sm text-[var(--muted-foreground)]">每月需完成 3 次拜访</p>
-            <form onSubmit={addVisit} className="mt-4">
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">每月需完成 3 次拜访（需选择医院）</p>
+            <form onSubmit={addVisit} className="mt-4 space-y-2">
+              <input
+                className="cso-input"
+                placeholder="搜索医院..."
+                value={hospitalQ}
+                onChange={(e) => setHospitalQ(e.target.value)}
+              />
+              <select
+                className="cso-input"
+                value={hospitalId}
+                onChange={(e) => setHospitalId(e.target.value)}
+                required
+              >
+                <option value="">选择医院终端</option>
+                {filteredHospitals.map((h) => (
+                  <option key={h.id} value={h.id}>
+                    {h.name}
+                    {h.city ? `（${h.city}）` : ""}
+                  </option>
+                ))}
+              </select>
               <button className="cso-btn-primary">提交 1 次拜访</button>
             </form>
           </div>
@@ -290,29 +353,69 @@ export default function RepPage() {
       )}
 
       {tab === "visits" && (
-        <section className="cso-card p-6">
-          <h2 className="cso-page-title mb-1">拜访明细</h2>
-          <table className="cso-table">
-            <thead>
-              <tr>
-                <th>周期</th>
-                <th>次数</th>
-                <th>目标</th>
-                <th>完成率</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visits.map((v) => (
-                <tr key={v.id} >
-                  <td>{v.period}</td>
-                  <td>{v.visit_count}</td>
-                  <td>{v.target_count}</td>
-                  <td>{v.completion_rate}%</td>
+        <div className="space-y-4">
+          <section className="cso-card p-6">
+            <h2 className="cso-page-title mb-1">拜访汇总</h2>
+            <table className="cso-table">
+              <thead>
+                <tr>
+                  <th>周期</th>
+                  <th>次数</th>
+                  <th>目标</th>
+                  <th>完成率</th>
+                  <th>医院</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+              </thead>
+              <tbody>
+                {visits.map((v) => (
+                  <tr key={v.id}>
+                    <td>{v.period}</td>
+                    <td>{v.visit_count}</td>
+                    <td>{v.target_count}</td>
+                    <td>{v.completion_rate}%</td>
+                    <td className="text-sm text-[var(--muted-foreground)]">
+                      {(v.hospital_names || []).join("、") || "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+          <section className="cso-card p-6">
+            <h2 className="cso-page-title mb-1">单次拜访记录</h2>
+            <table className="cso-table">
+              <thead>
+                <tr>
+                  <th>日期</th>
+                  <th>周期</th>
+                  <th>医院终端</th>
+                  <th>省市</th>
+                  <th>备注</th>
+                </tr>
+              </thead>
+              <tbody>
+                {events.map((ev) => (
+                  <tr key={ev.id}>
+                    <td>{ev.visit_date}</td>
+                    <td>{ev.period}</td>
+                    <td>{ev.hospital_name || "未填写"}</td>
+                    <td>
+                      {[ev.hospital_province, ev.hospital_city].filter(Boolean).join(" ") || "-"}
+                    </td>
+                    <td>{ev.note || "-"}</td>
+                  </tr>
+                ))}
+                {events.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="text-[var(--muted-foreground)]">
+                      暂无明细，请在待办中选择医院后提交拜访
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </section>
+        </div>
       )}
 
       {tab === "meetings" && (

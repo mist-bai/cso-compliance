@@ -131,6 +131,14 @@ class AgentCreate(BaseModel):
     password: str = "demo123"
 
 
+class AgentUpdate(BaseModel):
+    contact: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    region: str | None = None
+    is_active: bool | None = None
+
+
 class RepOut(OrmModel):
     id: int
     name: str
@@ -182,6 +190,20 @@ class FilingStatusUpdate(BaseModel):
     remark: str | None = None
 
 
+class VisitEventOut(OrmModel):
+    id: int
+    visit_record_id: int
+    representative_id: int
+    hospital_id: int | None = None
+    hospital_name: str | None = None
+    hospital_province: str | None = None
+    hospital_city: str | None = None
+    visit_date: date
+    period: str
+    note: str | None = None
+    rep_name: str | None = None
+
+
 class VisitOut(OrmModel):
     id: int
     representative_id: int
@@ -195,12 +217,16 @@ class VisitOut(OrmModel):
     rep_name: str | None = None
     provider_name: str | None = None
     completion_rate: float | None = None
+    hospital_names: list[str] = []
+    event_count: int = 0
 
 
 class VisitCreate(BaseModel):
     period: str = Field(description="YYYY-MM")
     visit_count: int = 1
     note: str | None = None
+    hospital_id: int | None = None
+    visit_date: date | None = None
 
 
 class MeetingOut(OrmModel):
@@ -277,6 +303,17 @@ class CourseCreate(BaseModel):
     is_compliance: bool = False
     pass_score: int = 60
     content: str | None = None
+
+
+class CourseUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    duration_minutes: int | None = None
+    has_exam: bool | None = None
+    is_compliance: bool | None = None
+    pass_score: int | None = None
+    content: str | None = None
+    is_active: bool | None = None
 
 
 class QuestionOut(OrmModel):

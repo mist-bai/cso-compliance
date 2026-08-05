@@ -12,6 +12,7 @@ type Course = {
   duration_minutes: number;
   has_exam: boolean;
   is_compliance: boolean;
+  content?: string;
   learner_count: number;
   pass_rate?: number | null;
   published_on?: string;
@@ -50,6 +51,7 @@ export default function CoursesPage() {
   const [error, setError] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [editCourse, setEditCourse] = useState<Course | null>(null);
+  const [infoCourse, setInfoCourse] = useState<Course | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
 
   async function load() {
@@ -94,6 +96,31 @@ export default function CoursesPage() {
     const qs = await api<Question[]>(`/api/training/courses/${course.id}/questions`);
     setEditCourse(course);
     setQuestions(qs);
+  }
+
+  async function openInfo(course: Course) {
+    const full = await api<Course>(`/api/training/courses/${course.id}`);
+    setInfoCourse(full);
+  }
+
+  async function saveCourseInfo(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!infoCourse) return;
+    const fd = new FormData(e.currentTarget);
+    await api(`/api/training/courses/${infoCourse.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        name: fd.get("name"),
+        description: fd.get("description"),
+        duration_minutes: Number(fd.get("duration_minutes") || 60),
+        content: fd.get("content"),
+        has_exam: fd.get("has_exam") === "1",
+        is_compliance: fd.get("is_compliance") === "1",
+        is_active: fd.get("is_active") === "1",
+      }),
+    });
+    setInfoCourse(null);
+    await load();
   }
 
   async function addQuestion(e: FormEvent<HTMLFormElement>) {
@@ -187,9 +214,14 @@ export default function CoursesPage() {
                   <td>{c.pass_rate != null ? `${c.pass_rate}%` : "-"}</td>
                   <td>{c.published_on || "-"}</td>
                   <td>
-                    <button className="cso-btn-secondary h-8" onClick={() => openQuestions(c)}>
-                      维护题目
-                    </button>
+                    <div className="flex flex-wrap gap-1">
+                      <button className="cso-btn-secondary h-8" onClick={() => openInfo(c)}>
+                        编辑
+                      </button>
+                      <button className="cso-btn-secondary h-8" onClick={() => openQuestions(c)}>
+                        维护题目
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -272,6 +304,56 @@ export default function CoursesPage() {
             </label>
             <div className="flex justify-end gap-2">
               <button type="button" className="cso-btn-secondary" onClick={() => setShowCreate(false)}>
+                取消
+              </button>
+              <button className="cso-btn-primary">保存</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {infoCourse && (
+        <Modal onClose={() => setInfoCourse(null)} wide>
+          <form className="space-y-3" onSubmit={saveCourseInfo}>
+            <h3 className="text-lg font-semibold">编辑课程</h3>
+            <input className="cso-input" name="name" defaultValue={infoCourse.name} required />
+            <input
+              className="cso-input"
+              name="description"
+              defaultValue={infoCourse.description || ""}
+              placeholder="课程描述"
+            />
+            <input
+              className="cso-input"
+              name="duration_minutes"
+              type="number"
+              defaultValue={infoCourse.duration_minutes}
+            />
+            <textarea
+              className="cso-input min-h-40 py-2"
+              name="content"
+              defaultValue={infoCourse.content || ""}
+              placeholder="学习正文内容"
+            />
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="has_exam" value="1" defaultChecked={infoCourse.has_exam} />
+              包含考试
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="is_compliance"
+                value="1"
+                defaultChecked={infoCourse.is_compliance}
+              />
+              备案考试课程
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="is_active" value="1" defaultChecked />
+              启用
+            </label>
+            <div className="flex justify-end gap-2">
+              <button type="button" className="cso-btn-secondary" onClick={() => setInfoCourse(null)}>
                 取消
               </button>
               <button className="cso-btn-primary">保存</button>
