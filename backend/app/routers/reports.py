@@ -47,6 +47,20 @@ def create_report(
     return row
 
 
+@router.get("/{report_id}", response_model=ReportOut)
+def get_report(
+    report_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    user: Annotated[User, Depends(get_current_user)],
+):
+    row = db.get(ComplianceReport, report_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="报告不存在")
+    if user.role == UserRole.AGENT.value and row.agent_id != user.agent_id:
+        raise HTTPException(status_code=403, detail="无权查看")
+    return row
+
+
 @router.post("/{report_id}/approve", response_model=ReportOut)
 def approve_report(
     report_id: int,
@@ -57,6 +71,23 @@ def approve_report(
     if not row:
         raise HTTPException(status_code=404, detail="报告不存在")
     row.status = ReportStatus.APPROVED.value
+    db.commit()
+    db.refresh(row)
+    return row
+
+
+@router.post("/{report_id}/reject", response_model=ReportOut)
+def reject_report(
+    report_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_roles(UserRole.ADMIN.value, UserRole.COMPLIANCE.value))],
+):
+    row = db.get(ComplianceReport, report_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="报告不存在")
+    if row.status != ReportStatus.SUBMITTED.value:
+        raise HTTPException(status_code=400, detail="仅已提交报告可驳回")
+    row.status = ReportStatus.REJECTED.value
     db.commit()
     db.refresh(row)
     return row

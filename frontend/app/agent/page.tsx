@@ -58,16 +58,24 @@ type Meeting = {
   provider_name?: string;
 };
 
-type Report = { id: number; title: string; period: string; status: string };
+type Report = { id: number; title: string; period: string; status: string; content?: string };
 type Factory = { id: number; name: string };
 type Provider = { id: number; name: string };
 type Rep = { id: number; name: string };
+type Fee = { id: number; name: string; category: string; amount: number; unit: string };
 type TrainStat = {
   representative_id: number;
   rep_name: string;
   total_courses: number;
   completed_courses: number;
   pending_courses: number;
+  enrollments?: {
+    course_id: number;
+    course_name?: string;
+    status: string;
+    score?: number;
+    max_score?: number;
+  }[];
 };
 
 const tabs = [
@@ -96,6 +104,7 @@ export default function AgentPage() {
   const [meetingQ, setMeetingQ] = useState("");
   const [repQ, setRepQ] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [showCreateFiling, setShowCreateFiling] = useState(false);
   const [showMeetingForm, setShowMeetingForm] = useState(false);
   const [detail, setDetail] = useState<Meeting | null>(null);
@@ -103,23 +112,30 @@ export default function AgentPage() {
   const [visitEvents, setVisitEvents] = useState<VisitEvent[]>([]);
   const [editMeeting, setEditMeeting] = useState<Meeting | null>(null);
   const [editFiling, setEditFiling] = useState<Filing | null>(null);
+  const [fees, setFees] = useState<Fee[]>([]);
+  const [trainDetail, setTrainDetail] = useState<TrainStat | null>(null);
+  const [reportDetail, setReportDetail] = useState<Report | null>(null);
+  const [createLogin, setCreateLogin] = useState(true);
+  const [budget, setBudget] = useState("");
 
   async function load() {
     try {
-      const [f, v, m, r, fac, pro, repList, stats] = await Promise.all([
+      const providerQs = providerId ? `provider_id=${providerId}` : "";
+      const meetingParams = new URLSearchParams({
+        ...(meetingQ ? { q: meetingQ } : {}),
+        ...(repQ ? { rep_q: repQ } : {}),
+        ...(providerId ? { provider_id: providerId } : {}),
+      }).toString();
+      const [f, v, m, r, fac, pro, repList, stats, feeList] = await Promise.all([
         api<Filing[]>(`/api/filings${providerId ? `?provider_id=${providerId}` : ""}`),
-        api<Visit[]>("/api/visits"),
-        api<Meeting[]>(
-          `/api/meetings?${new URLSearchParams({
-            ...(meetingQ ? { q: meetingQ } : {}),
-            ...(repQ ? { rep_q: repQ } : {}),
-          }).toString()}`
-        ),
+        api<Visit[]>(`/api/visits${providerQs ? `?${providerQs}` : ""}`),
+        api<Meeting[]>(`/api/meetings?${meetingParams}`),
         api<Report[]>("/api/reports"),
         api<Factory[]>("/api/factories"),
         api<Provider[]>("/api/providers"),
         api<Rep[]>("/api/representatives"),
         api<TrainStat[]>("/api/training/stats/by-rep"),
+        api<Fee[]>("/api/fees"),
       ]);
       setFilings(f);
       setVisits(v);
@@ -129,6 +145,7 @@ export default function AgentPage() {
       setProviders(pro);
       setReps(repList);
       setTrainStats(stats);
+      setFees(feeList);
       setError("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "加载失败");
@@ -157,7 +174,7 @@ export default function AgentPage() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     try {
-      await api("/api/filings", {
+      const res = await api<{ login_username?: string; login_created?: boolean }>("/api/filings", {
         method: "POST",
         body: JSON.stringify({
           name: fd.get("name"),
@@ -166,9 +183,20 @@ export default function AgentPage() {
           phone: fd.get("phone") || null,
           valid_from: fd.get("valid_from") || null,
           valid_to: fd.get("valid_to") || null,
+          create_login: fd.get("create_login") === "1",
+          username: fd.get("username") || null,
+          password: "demo123",
         }),
       });
       setShowCreateFiling(false);
+      if (res.login_username) {
+        setInfo(
+          `备案已创建；代表账号 ${res.login_username} / demo123${
+            res.login_created ? "（新建）" : "（已关联）"
+          }`
+        );
+      }
+      setError("");
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "创建失败");
@@ -196,11 +224,12 @@ export default function AgentPage() {
           attendees,
           attendees_count: attendees.length,
           purpose: fd.get("purpose"),
-          budget: fd.get("budget") ? Number(fd.get("budget")) : null,
+          budget: budget ? Number(budget) : fd.get("budget") ? Number(fd.get("budget")) : null,
           submit: fd.get("submit") === "1",
         }),
       });
       setShowMeetingForm(false);
+      setBudget("");
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "会议申请失败");
@@ -305,6 +334,7 @@ export default function AgentPage() {
       }
     >
       {error && <p className="mb-4 text-sm text-rose-600">{error}</p>}
+      {info && <p className="mb-4 text-sm text-emerald-700">{info}</p>}
 
       {tab === "filings" && (
         <SectionCard
@@ -526,6 +556,7 @@ export default function AgentPage() {
                   <th>课程总数</th>
                   <th>已完成</th>
                   <th>待完成</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -535,6 +566,11 @@ export default function AgentPage() {
                     <td>{s.total_courses}</td>
                     <td>{s.completed_courses}</td>
                     <td>{s.pending_courses}</td>
+                    <td>
+                      <button className="cso-btn-secondary h-8" onClick={() => setTrainDetail(s)}>
+                        查看明细
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -559,11 +595,17 @@ export default function AgentPage() {
               {reports.map((r) => (
                 <li
                   key={r.id}
-                  className="flex items-center justify-between border-b border-[var(--border)] py-3 last:border-0"
+                  className="flex items-center justify-between gap-2 border-b border-[var(--border)] py-3 last:border-0"
                 >
-                  <span>
+                  <button
+                    className="text-left hover:underline"
+                    onClick={async () => {
+                      const detail = await api<Report>(`/api/reports/${r.id}`);
+                      setReportDetail(detail);
+                    }}
+                  >
                     {r.title} · {r.period}
-                  </span>
+                  </button>
                   <StatusBadge status={r.status} />
                 </li>
               ))}
@@ -590,6 +632,23 @@ export default function AgentPage() {
               <input className="cso-input" type="date" name="valid_from" />
               <input className="cso-input" type="date" name="valid_to" />
             </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="create_login"
+                value="1"
+                checked={createLogin}
+                onChange={(e) => setCreateLogin(e.target.checked)}
+              />
+              同时开通代表登录账号（默认密码 demo123）
+            </label>
+            {createLogin && (
+              <input
+                className="cso-input"
+                name="username"
+                placeholder="登录账号（可空，默认 rep_身份证后6位）"
+              />
+            )}
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" className="cso-btn-secondary" onClick={() => setShowCreateFiling(false)}>
                 取消
@@ -614,7 +673,29 @@ export default function AgentPage() {
             </select>
             <input className="cso-input" name="location" placeholder="会议地点" required />
             <input className="cso-input" type="date" name="meeting_date" required />
-            <input className="cso-input" name="budget" type="number" placeholder="会议预算（元）" />
+            <select
+              className="cso-input"
+              defaultValue=""
+              onChange={(e) => {
+                const fee = fees.find((f) => String(f.id) === e.target.value);
+                if (fee) setBudget(String(fee.amount));
+              }}
+            >
+              <option value="">选择费用标准（可选，自动带出预算）</option>
+              {fees.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name} · ¥{f.amount}/{f.unit}
+                </option>
+              ))}
+            </select>
+            <input
+              className="cso-input"
+              name="budget"
+              type="number"
+              placeholder="会议预算（元）"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+            />
             <select className="cso-input" name="representative_id">
               <option value="">主责代表（可选）</option>
               {reps.map((r) => (
@@ -813,6 +894,71 @@ export default function AgentPage() {
               <button className="cso-btn-primary">保存</button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {trainDetail && (
+        <Modal onClose={() => setTrainDetail(null)} wide>
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">培训明细 · {trainDetail.rep_name}</h3>
+              <p className="text-sm text-[var(--muted-foreground)]">
+                已完成 {trainDetail.completed_courses}/{trainDetail.total_courses}
+              </p>
+            </div>
+            <button className="cso-btn-ghost h-8 px-2" onClick={() => setTrainDetail(null)}>
+              ×
+            </button>
+          </div>
+          <table className="cso-table">
+            <thead>
+              <tr>
+                <th>课程</th>
+                <th>状态</th>
+                <th>成绩</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(trainDetail.enrollments || []).map((e) => (
+                <tr key={e.course_id}>
+                  <td>{e.course_name || `课程#${e.course_id}`}</td>
+                  <td>
+                    <StatusBadge status={e.status} />
+                  </td>
+                  <td>
+                    {e.score != null ? `${e.score}/${e.max_score ?? "-"}` : "-"}
+                  </td>
+                </tr>
+              ))}
+              {(trainDetail.enrollments || []).length === 0 && (
+                <tr>
+                  <td colSpan={3} className="text-[var(--muted-foreground)]">
+                    该代表尚未报名任何课程
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </Modal>
+      )}
+
+      {reportDetail && (
+        <Modal onClose={() => setReportDetail(null)}>
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">{reportDetail.title}</h3>
+              <p className="text-sm text-[var(--muted-foreground)]">{reportDetail.period}</p>
+            </div>
+            <StatusBadge status={reportDetail.status} />
+          </div>
+          <pre className="whitespace-pre-wrap rounded-lg bg-[#f8fafc] p-4 text-sm">
+            {reportDetail.content || "无正文"}
+          </pre>
+          <div className="mt-4 flex justify-end">
+            <button className="cso-btn-secondary" onClick={() => setReportDetail(null)}>
+              关闭
+            </button>
+          </div>
         </Modal>
       )}
 

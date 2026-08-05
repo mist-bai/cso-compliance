@@ -8,7 +8,7 @@ from app.auth import get_current_user, require_roles
 from app.database import get_db
 from app.models import (
     AcademicMeeting,
-    Agent,
+    Course,
     CourseEnrollment,
     CourseProgressStatus,
     FilingStatus,
@@ -92,6 +92,35 @@ def provider_cockpit(
             .scalar()
             or 0
         )
+        # 待培训：该服务商下代表中，存在未通过/未完成课程的人数
+        provider_rep_ids = [
+            r.id
+            for r in db.query(Representative)
+            .filter(Representative.agent_id.in_(agent_ids))
+            .all()
+        ]
+        active_courses = (
+            db.query(func.count(Course.id)).filter(Course.is_active.is_(True)).scalar() or 0
+        )
+        training_pending = 0
+        if provider_rep_ids and active_courses:
+            for rid in provider_rep_ids:
+                completed = (
+                    db.query(func.count(CourseEnrollment.id))
+                    .filter(
+                        CourseEnrollment.representative_id == rid,
+                        CourseEnrollment.status.in_(
+                            [
+                                CourseProgressStatus.PASSED.value,
+                                CourseProgressStatus.COMPLETED.value,
+                            ]
+                        ),
+                    )
+                    .scalar()
+                    or 0
+                )
+                if int(completed) < int(active_courses):
+                    training_pending += 1
         rows.append(
             DashboardProviderRow(
                 provider_id=p.id,
@@ -100,7 +129,7 @@ def provider_cockpit(
                 active_filings=int(active_filings),
                 visit_total=int(visit_total),
                 meeting_count=int(meeting_count),
-                training_pending=4,
+                training_pending=training_pending,
             )
         )
     return rows

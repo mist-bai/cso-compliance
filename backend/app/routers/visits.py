@@ -57,6 +57,7 @@ def list_visits(
     user: Annotated[User, Depends(get_current_user)],
     period: str | None = None,
     representative_id: int | None = None,
+    provider_id: int | None = None,
 ):
     q = db.query(VisitRecord)
     if user.role == UserRole.AGENT.value and user.agent_id:
@@ -67,6 +68,8 @@ def list_visits(
         q = q.filter(VisitRecord.period == period)
     if representative_id:
         q = q.filter(VisitRecord.representative_id == representative_id)
+    if provider_id:
+        q = q.filter(VisitRecord.provider_id == provider_id)
     rows = q.order_by(VisitRecord.period.desc(), VisitRecord.id.desc()).all()
     return [_to_out(db, row) for row in rows]
 

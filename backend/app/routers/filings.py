@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_user, require_roles
+from app.auth import get_current_user, hash_password, require_roles
 from app.database import get_db
 from app.models import (
     Agent,
@@ -13,7 +13,7 @@ from app.models import (
     User,
     UserRole,
 )
-from app.schemas import FilingCreate, FilingOut, FilingStatusUpdate
+from app.schemas import FilingCreate, FilingCreateOut, FilingOut, FilingStatusUpdate
 
 router = APIRouter(prefix="/filings", tags=["filings"])
 
@@ -60,7 +60,7 @@ def list_filings(
     return [_to_out(r) for r in rows]
 
 
-@router.post("", response_model=FilingOut)
+@router.post("", response_model=FilingCreateOut)
 def create_filing(
     body: FilingCreate,
     db: Annotated[Session, Depends(get_db)],
@@ -110,9 +110,42 @@ def create_filing(
         remark=body.remark,
     )
     db.add(row)
+    db.flush()
+
+    login_username = None
+    login_created = False
+    if body.create_login:
+        login_username = (body.username or f"rep_{body.id_card[-6:]}").strip().lower()
+        existing = db.query(User).filter(User.username == login_username).first()
+        if existing:
+            if existing.representative_id and existing.representative_id != rep.id:
+                raise HTTPException(status_code=400, detail="登录账号已被其他代表占用")
+            existing.representative_id = rep.id
+            existing.agent_id = agent_id
+            existing.display_name = body.name
+            existing.is_active = True
+            login_created = False
+        else:
+            db.add(
+                User(
+                    username=login_username,
+                    password_hash=hash_password(body.password or "demo123"),
+                    display_name=body.name,
+                    role=UserRole.REP.value,
+                    agent_id=agent_id,
+                    representative_id=rep.id,
+                    phone=body.phone,
+                )
+            )
+            login_created = True
+
     db.commit()
     db.refresh(row)
-    return _to_out(row)
+    return FilingCreateOut(
+        **_to_out(row).model_dump(),
+        login_username=login_username,
+        login_created=login_created,
+    )
 
 
 @router.patch("/{filing_id}/status", response_model=FilingOut)

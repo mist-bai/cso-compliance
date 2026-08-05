@@ -181,6 +181,14 @@ class FilingCreate(BaseModel):
     valid_from: date | None = None
     valid_to: date | None = None
     remark: str | None = None
+    create_login: bool = False
+    username: str | None = None
+    password: str = "demo123"
+
+
+class FilingCreateOut(FilingOut):
+    login_username: str | None = None
+    login_created: bool = False
 
 
 class FilingStatusUpdate(BaseModel):

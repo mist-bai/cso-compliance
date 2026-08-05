@@ -213,6 +213,26 @@ export default function AdminPage() {
     await load();
   }
 
+  async function rejectReport(id: number) {
+    await api(`/api/reports/${id}/reject`, { method: "POST" });
+    await load();
+  }
+
+  async function createProduct(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    await api("/api/products", {
+      method: "POST",
+      body: JSON.stringify({
+        name: fd.get("name"),
+        factory_id: Number(fd.get("factory_id")),
+        code: fd.get("code") || null,
+      }),
+    });
+    e.currentTarget.reset();
+    await load();
+  }
+
   async function advanceFiling(id: number, status: string) {
     await api(`/api/filings/${id}/status`, {
       method: "PATCH",
@@ -505,32 +525,47 @@ export default function AdminPage() {
       )}
 
       {tab === "products" && (
-        <section className="cso-card p-6">
-          <h2 className="cso-page-title mb-1">产品管理</h2>
-          <p className="mb-3 text-sm text-[var(--muted-foreground)]">
-            来源：marketing-platform 拜访产品大类 + 流向常用品种
-          </p>
-          <table className="cso-table">
-            <thead>
-              <tr>
-                <th>产品</th>
-                <th>编码</th>
-                <th>工厂简称</th>
-                <th>工厂全称</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p) => (
-                <tr key={p.id} >
-                  <td>{p.name}</td>
-                  <td>{p.code}</td>
-                  <td>{p.factory_short_name}</td>
-                  <td>{p.factory_name}</td>
-                </tr>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <form className="cso-card space-y-3 p-5" onSubmit={createProduct}>
+            <h2 className="font-semibold">新增产品</h2>
+            <input className="cso-input" name="name" placeholder="产品名称" required />
+            <input className="cso-input" name="code" placeholder="产品编码" />
+            <select className="cso-input" name="factory_id" required>
+              {factories.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.short_name || f.name}
+                </option>
               ))}
-            </tbody>
-          </table>
-        </section>
+            </select>
+            <button className="cso-btn-primary">保存</button>
+          </form>
+          <section className="cso-card overflow-x-auto p-6 lg:col-span-2">
+            <h2 className="cso-page-title mb-1">产品管理</h2>
+            <p className="mb-3 text-sm text-[var(--muted-foreground)]">
+              来源：marketing-platform 拜访产品大类 + 流向常用品种
+            </p>
+            <table className="cso-table">
+              <thead>
+                <tr>
+                  <th>产品</th>
+                  <th>编码</th>
+                  <th>工厂简称</th>
+                  <th>工厂全称</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.name}</td>
+                    <td>{p.code}</td>
+                    <td>{p.factory_short_name}</td>
+                    <td>{p.factory_name}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </div>
       )}
 
       {tab === "fees" && (
@@ -581,9 +616,14 @@ export default function AdminPage() {
                 <div className="flex items-center gap-2">
                   <StatusBadge status={r.status} />
                   {r.status === "已提交" && (
-                    <button className="cso-btn-primary" onClick={() => approveReport(r.id)}>
-                      通过
-                    </button>
+                    <>
+                      <button className="cso-btn-primary" onClick={() => approveReport(r.id)}>
+                        通过
+                      </button>
+                      <button className="cso-btn-secondary" onClick={() => rejectReport(r.id)}>
+                        驳回
+                      </button>
+                    </>
                   )}
                 </div>
               </li>

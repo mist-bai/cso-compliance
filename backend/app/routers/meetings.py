@@ -38,6 +38,7 @@ def list_meetings(
     user: Annotated[User, Depends(get_current_user)],
     q: str | None = Query(default=None),
     rep_q: str | None = Query(default=None),
+    provider_id: int | None = None,
 ):
     query = db.query(AcademicMeeting)
     if user.role == UserRole.AGENT.value and user.agent_id:
@@ -46,6 +47,8 @@ def list_meetings(
         query = query.filter(
             AcademicMeeting.representative_id == user.representative_id
         )
+    if provider_id:
+        query = query.filter(AcademicMeeting.provider_id == provider_id)
     rows = query.order_by(AcademicMeeting.id.desc()).all()
     if q:
         rows = [r for r in rows if q in r.title or (r.location and q in r.location)]
