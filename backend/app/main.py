@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
 
 from app.database import Base, SessionLocal, engine
-from app.routers import auth, dashboard, filings, meetings, master, reports, visits
+from app.routers import auth, dashboard, filings, meetings, master, reports, training, visits
 from app.seed import seed_if_empty, sync_master_data
 
 app = FastAPI(title="代理商合规管理系统", version="0.1.0")
@@ -23,6 +23,7 @@ app.include_router(master.router, prefix="/api")
 app.include_router(filings.router, prefix="/api")
 app.include_router(visits.router, prefix="/api")
 app.include_router(meetings.router, prefix="/api")
+app.include_router(training.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
 

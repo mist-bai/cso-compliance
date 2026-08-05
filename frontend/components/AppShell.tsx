@@ -100,12 +100,18 @@ export function StatusBadge({ status }: { status: string }) {
     考试通过待备案: "bg-sky-100 text-sky-800",
     备案有效: "bg-emerald-100 text-emerald-800",
     备案撤销: "bg-rose-100 text-rose-800",
+    计划中: "bg-slate-100 text-slate-700",
     待审批: "bg-amber-100 text-amber-800",
     已批准: "bg-sky-100 text-sky-800",
-    待提交总结: "bg-violet-100 text-violet-800",
+    已驳回: "bg-rose-100 text-rose-800",
     已完成: "bg-emerald-100 text-emerald-800",
     已提交: "bg-sky-100 text-sky-800",
     已通过: "bg-emerald-100 text-emerald-800",
+    未开始: "bg-slate-100 text-slate-700",
+    学习中: "bg-sky-100 text-sky-800",
+    待考试: "bg-violet-100 text-violet-800",
+    考试通过: "bg-emerald-100 text-emerald-800",
+    考试未通过: "bg-rose-100 text-rose-800",
   };
   return (
     <span className={`cso-badge ${map[status] || "bg-slate-100 text-slate-700"}`}>

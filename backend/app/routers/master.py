@@ -11,6 +11,7 @@ from app.models import (
     FeeStandard,
     Hospital,
     Product,
+    Representative,
     ServiceProvider,
     User,
     UserRole,
@@ -26,6 +27,7 @@ from app.schemas import (
     ProductOut,
     ProviderCreate,
     ProviderOut,
+    RepOut,
 )
 from app.seed import sync_master_data
 
@@ -120,6 +122,25 @@ def list_products(
         item = ProductOut.model_validate(r)
         item.factory_name = r.factory.name if r.factory else None
         item.factory_short_name = r.factory.short_name if r.factory else None
+        out.append(item)
+    return out
+
+
+@router.get("/representatives", response_model=list[RepOut])
+def list_representatives(
+    db: Annotated[Session, Depends(get_db)],
+    user: Annotated[User, Depends(get_current_user)],
+):
+    q = db.query(Representative)
+    if user.role == UserRole.AGENT.value and user.agent_id:
+        q = q.filter(Representative.agent_id == user.agent_id)
+    elif user.role == UserRole.REP.value and user.representative_id:
+        q = q.filter(Representative.id == user.representative_id)
+    rows = q.order_by(Representative.id).all()
+    out = []
+    for r in rows:
+        item = RepOut.model_validate(r)
+        item.agent_name = r.agent.name if r.agent else None
         out.append(item)
     return out
 

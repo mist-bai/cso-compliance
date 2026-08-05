@@ -186,27 +186,118 @@ class VisitCreate(BaseModel):
 class MeetingOut(OrmModel):
     id: int
     title: str
+    meeting_type: str | None = None
     location: str | None = None
     meeting_date: date | None = None
     agent_id: int
     provider_id: int
     representative_id: int | None = None
+    attendees_count: int = 0
+    attendees: list[str] = []
+    purpose: str | None = None
     status: str
     budget: float | None = None
     summary: str | None = None
     rep_name: str | None = None
+    provider_name: str | None = None
+    agent_name: str | None = None
 
 
 class MeetingCreate(BaseModel):
     title: str
+    meeting_type: str | None = "学术研讨会"
     location: str | None = None
     meeting_date: date | None = None
     representative_id: int | None = None
+    attendees: list[str] = []
+    attendees_count: int | None = None
+    purpose: str | None = None
     budget: float | None = None
+    submit: bool = False  # True=直接提交待审批，False=计划中
+
+
+class MeetingUpdate(BaseModel):
+    title: str | None = None
+    meeting_type: str | None = None
+    location: str | None = None
+    meeting_date: date | None = None
+    representative_id: int | None = None
+    attendees: list[str] | None = None
+    attendees_count: int | None = None
+    purpose: str | None = None
+    budget: float | None = None
+    status: str | None = None
 
 
 class MeetingSummaryUpdate(BaseModel):
     summary: str
+
+
+class CourseOut(OrmModel):
+    id: int
+    name: str
+    description: str | None = None
+    duration_minutes: int
+    has_exam: bool
+    is_compliance: bool
+    pass_score: int
+    content: str | None = None
+    published_on: date | None = None
+    is_active: bool
+    learner_count: int = 0
+    pass_rate: float | None = None
+    question_count: int = 0
+
+
+class CourseCreate(BaseModel):
+    name: str
+    description: str | None = None
+    duration_minutes: int = 60
+    has_exam: bool = True
+    is_compliance: bool = False
+    pass_score: int = 60
+    content: str | None = None
+
+
+class QuestionOut(OrmModel):
+    id: int
+    course_id: int
+    stem: str
+    options: list[str]
+    score: int
+    sort_order: int
+    # 答卷时不返回答案；管理端另接口可见
+    answer: str | None = None
+
+
+class EnrollmentOut(OrmModel):
+    id: int
+    course_id: int
+    representative_id: int
+    status: str
+    score: int | None = None
+    max_score: int | None = None
+    passed: bool | None = None
+    learned_at: datetime | None = None
+    examined_at: datetime | None = None
+    course_name: str | None = None
+    duration_minutes: int | None = None
+    has_exam: bool | None = None
+    is_compliance: bool | None = None
+    rep_name: str | None = None
+
+
+class ExamSubmit(BaseModel):
+    answers: dict[str, str]  # question_id -> A/B/C/D
+
+
+class ExamResultOut(BaseModel):
+    enrollment_id: int
+    score: int
+    max_score: int
+    passed: bool
+    status: str
+    filing_updated: int = 0
 
 
 class ReportOut(OrmModel):

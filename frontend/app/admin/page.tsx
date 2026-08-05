@@ -449,10 +449,21 @@ export default function AdminPage() {
                 </span>
                 <div className="flex items-center gap-2">
                   <StatusBadge status={m.status} />
-                  {m.status === "待审批" && (
-                    <button className="cso-btn-primary" onClick={() => approveMeeting(m.id)}>
-                      批准
-                    </button>
+                  {(m.status === "待审批" || m.status === "计划中") && (
+                    <>
+                      <button className="cso-btn-primary" onClick={() => approveMeeting(m.id)}>
+                        批准
+                      </button>
+                      <button
+                        className="cso-btn-secondary"
+                        onClick={async () => {
+                          await api(`/api/meetings/${m.id}/reject`, { method: "POST" });
+                          await load();
+                        }}
+                      >
+                        驳回
+                      </button>
+                    </>
                   )}
                 </div>
               </li>

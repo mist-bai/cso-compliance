@@ -4,6 +4,8 @@ import json
 from datetime import date
 from pathlib import Path
 
+# json used for meeting attendees & exam options
+
 from sqlalchemy.orm import Session
 
 from app.auth import hash_password
@@ -11,6 +13,10 @@ from app.models import (
     AcademicMeeting,
     Agent,
     ComplianceReport,
+    Course,
+    CourseEnrollment,
+    CourseProgressStatus,
+    ExamQuestion,
     Factory,
     FeeStandard,
     FilingStatus,
@@ -217,7 +223,8 @@ def seed_demo_if_empty(db: Session) -> None:
         FilingStatus.REVOKED.value,
         FilingStatus.REVOKED.value,
         FilingStatus.EXAM_PASSED_PENDING_FILING.value,
-        FilingStatus.ACTIVE.value,
+        # 罗浩：便于演示「备案考试通过 → 考试通过待备案」
+        FilingStatus.APPLIED_PENDING_EXAM.value,
     ]
     for i, rep in enumerate(reps):
         fcode = factory_codes[i % len(factory_codes)]
@@ -251,26 +258,121 @@ def seed_demo_if_empty(db: Session) -> None:
                 )
             )
 
+    locations = [
+        "上海世博展览馆",
+        "成都世纪城会议中心",
+        "北京国际会议中心",
+        "广州白云国际会议中心",
+        "深圳会展中心",
+    ]
     for i in range(1, 16):
         kinds = ["学术研讨会", "产品推广会", "医生培训会", "科室交流会"]
-        title = f"{kinds[(i - 1) % 4]}-华北区第{i}场"
-        status = (
-            MeetingStatus.SUMMARY_PENDING.value
-            if i <= 4 or i >= 9
-            else MeetingStatus.APPROVED.value
-        )
+        kind = kinds[(i - 1) % 4]
+        title = f"{kind}-华北区第{i}场"
+        if i in {6, 7, 8, 14}:
+            status = MeetingStatus.PLANNING.value
+        elif i in {1, 3, 13}:
+            status = MeetingStatus.APPROVED.value
+        elif i == 2:
+            status = MeetingStatus.PENDING.value
+        else:
+            status = MeetingStatus.CLOSED.value
+        attendees = [reps[(i + j) % 8].name for j in range(3 + (i % 4))]
         db.add(
             AcademicMeeting(
                 title=title,
-                location="华北区会议中心",
+                meeting_type=kind,
+                location=locations[(i - 1) % len(locations)],
                 meeting_date=date(2025, 3, min(i, 28)),
                 agent_id=primary.id,
                 provider_id=primary.provider_id,
                 representative_id=reps[(i - 1) % 8].id,
+                attendees_count=len(attendees),
+                attendees_json=json.dumps(attendees, ensure_ascii=False),
+                purpose=f"{kind}合规备案申请",
                 status=status,
                 budget=8000 + i * 200,
+                summary="会议顺利召开，材料齐备。" if status == MeetingStatus.CLOSED.value else None,
             )
         )
+
+    # 培训课程 + 备案考试题
+    course_specs = [
+        ("药品合规销售规范培训", 120, True, True, "覆盖推广行为红线、拜访合规与费用标准。"),
+        ("抗生素合理使用指南", 90, True, False, "抗菌药物临床合理使用要点。"),
+        ("学术会议组织与管理", 60, False, False, "学术会议申请、执行与总结规范。"),
+        ("患者隐私保护与数据安全", 45, True, False, "患者信息与数据安全管理。"),
+        ("新产品知识培训-心血管系列", 150, True, False, "心血管产品知识与学术推广要点。"),
+    ]
+    courses: list[Course] = []
+    for name, mins, has_exam, is_compliance, desc in course_specs:
+        c = Course(
+            name=name,
+            description=desc,
+            duration_minutes=mins,
+            has_exam=has_exam,
+            is_compliance=is_compliance,
+            pass_score=60,
+            content=f"《{name}》学习材料（演示）。\n1. 政策背景\n2. 操作要点\n3. 案例警示",
+            published_on=date(2024, 1, 15),
+        )
+        db.add(c)
+        db.flush()
+        courses.append(c)
+
+    compliance = courses[0]
+    questions = [
+        ("推广活动中，以下哪项属于合规要求？", ["可给予处方回扣", "如实记录拜访与费用", "伪造会议签到", "超标准宴请"], "B"),
+        ("代表备案考试未通过时，正确处理是？", ["继续开展推广", "暂停备案流程并补考", "由代理商代签", "忽略考试要求"], "B"),
+        ("学术会议费用申请应基于？", ["口头约定", "费用标准与审批流程", "个人垫付即可", "无需留存票据"], "B"),
+        ("拜访数据应由谁提交？", ["代理商代填即可", "代表本人如实提交", "医院工作人员", "无需提交"], "B"),
+        ("发现潜在合规风险时应？", ["隐瞒不报", "及时上报并停止违规行为", "事后补材料即可", "仅口头说明"], "B"),
+    ]
+    for idx, (stem, options, answer) in enumerate(questions):
+        db.add(
+            ExamQuestion(
+                course_id=compliance.id,
+                stem=stem,
+                options_json=json.dumps(options, ensure_ascii=False),
+                answer=answer,
+                score=20,
+                sort_order=idx + 1,
+            )
+        )
+    # 第二门课也给少量题
+    for idx, (stem, options, answer) in enumerate(questions[:3]):
+        db.add(
+            ExamQuestion(
+                course_id=courses[1].id,
+                stem=stem,
+                options_json=json.dumps(options, ensure_ascii=False),
+                answer=answer,
+                score=20,
+                sort_order=idx + 1,
+            )
+        )
+
+    # 给罗浩分配待学课程；部分代表已完成
+    for course in courses[:4]:
+        db.add(
+            CourseEnrollment(
+                course_id=course.id,
+                representative_id=reps[-1].id,  # 罗浩
+                status=CourseProgressStatus.NOT_STARTED.value
+                if course.is_compliance
+                else CourseProgressStatus.LEARNING.value,
+            )
+        )
+    db.add(
+        CourseEnrollment(
+            course_id=courses[2].id,
+            representative_id=reps[0].id,
+            status=CourseProgressStatus.COMPLETED.value,
+            passed=True,
+            score=100,
+            max_score=100,
+        )
+    )
 
     db.add(
         ComplianceReport(

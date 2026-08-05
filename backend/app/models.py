@@ -36,12 +36,20 @@ class FilingStatus(str, Enum):
 
 
 class MeetingStatus(str, Enum):
-    DRAFT = "草稿"
+    PLANNING = "计划中"
     PENDING = "待审批"
     APPROVED = "已批准"
     REJECTED = "已驳回"
-    SUMMARY_PENDING = "待提交总结"
     CLOSED = "已完成"
+
+
+class CourseProgressStatus(str, Enum):
+    NOT_STARTED = "未开始"
+    LEARNING = "学习中"
+    READY_EXAM = "待考试"
+    PASSED = "考试通过"
+    FAILED = "考试未通过"
+    COMPLETED = "已完成"
 
 
 class ReportStatus(str, Enum):
@@ -213,6 +221,7 @@ class AcademicMeeting(Base, TimestampMixin):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(256))
+    meeting_type: Mapped[str | None] = mapped_column(String(64), nullable=True)
     location: Mapped[str | None] = mapped_column(String(256), nullable=True)
     meeting_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     agent_id: Mapped[int] = mapped_column(ForeignKey("agents.id"))
@@ -220,12 +229,72 @@ class AcademicMeeting(Base, TimestampMixin):
     representative_id: Mapped[int | None] = mapped_column(
         ForeignKey("representatives.id"), nullable=True
     )
-    status: Mapped[str] = mapped_column(String(32), default=MeetingStatus.PENDING.value)
+    attendees_count: Mapped[int] = mapped_column(Integer, default=0)
+    attendees_json: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON 姓名列表
+    purpose: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default=MeetingStatus.PLANNING.value)
     budget: Mapped[float | None] = mapped_column(Float, nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     agent: Mapped[Agent] = relationship()
     representative: Mapped[Representative | None] = relationship()
+
+
+class Course(Base, TimestampMixin):
+    """培训课程（对齐原型课程管理）。"""
+
+    __tablename__ = "courses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(256))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    duration_minutes: Mapped[int] = mapped_column(Integer, default=60)
+    has_exam: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_compliance: Mapped[bool] = mapped_column(Boolean, default=False)  # 备案考试课程
+    pass_score: Mapped[int] = mapped_column(Integer, default=60)
+    content: Mapped[str | None] = mapped_column(Text, nullable=True)
+    published_on: Mapped[date | None] = mapped_column(Date, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    questions: Mapped[list[ExamQuestion]] = relationship(back_populates="course")
+
+
+class ExamQuestion(Base, TimestampMixin):
+    __tablename__ = "exam_questions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), index=True)
+    stem: Mapped[str] = mapped_column(Text)
+    options_json: Mapped[str] = mapped_column(Text)  # JSON list[str]
+    answer: Mapped[str] = mapped_column(String(8))  # A/B/C/D
+    score: Mapped[int] = mapped_column(Integer, default=20)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+
+    course: Mapped[Course] = relationship(back_populates="questions")
+
+
+class CourseEnrollment(Base, TimestampMixin):
+    __tablename__ = "course_enrollments"
+    __table_args__ = (
+        UniqueConstraint("course_id", "representative_id", name="uq_course_rep"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), index=True)
+    representative_id: Mapped[int] = mapped_column(
+        ForeignKey("representatives.id"), index=True
+    )
+    status: Mapped[str] = mapped_column(
+        String(32), default=CourseProgressStatus.NOT_STARTED.value
+    )
+    score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    max_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    passed: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    learned_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    examined_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    course: Mapped[Course] = relationship()
+    representative: Mapped[Representative] = relationship()
 
 
 class ComplianceReport(Base, TimestampMixin):
