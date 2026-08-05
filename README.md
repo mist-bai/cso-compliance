@@ -23,7 +23,9 @@ docker compose up -d --build
 
 | 角色 | 用户名 | 密码 |
 |------|--------|------|
-| 代理商 | agent_huabei | demo123 |
+| 代理商（大连博道） | agent_huabei | demo123 |
+| 代理商（天津博达） | agent_jingjin | demo123 |
+| 代理商（安徽博鑫） | agent_anhui | demo123 |
 | 代表 | rep_luohao | demo123 |
 | 合规看板 | compliance | demo123 |
 | 后台管理 | admin | demo123 |
@@ -55,6 +57,13 @@ git remote add origin git@github.com:<你的账号>/cso-compliance.git
 git push -u origin master
 ```
 
+## 主数据与 RAG
+
+- **需要主数据**：工厂/服务商/产品已从问数项目与 marketing-platform 接入，见 `backend/resources/` 与 `docs/主数据与RAG说明.md`
+- **暂不需要 RAG**：培训考试/制度问答阶段再接入问数 Qdrant 或营销平台知识库
+
+后台「同步真实主数据」会调用 `POST /api/master/sync`。
+
 ## 当前阶段
 
-Phase 0–1：脚手架、五入口、登录鉴权、主数据与代表备案状态机（本地可演示）。
+Phase 1：真实主数据接入 + 五入口备案/拜访/会议可演示。

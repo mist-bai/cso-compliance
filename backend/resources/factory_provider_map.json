@@ -1,0 +1,14 @@
+{
+  "comment": "来源：marketing-platform/tools/oracle_bridge/oracle_bridge.py ORG_MAP（法人单位 → 发薪/服务商）",
+  "map": {
+    "哈尔滨莱博通药业有限公司": {"provider": "大连博道", "product_line": "莱博通"},
+    "哈尔滨誉衡制药有限公司": {"provider": "大连博道", "product_line": "誉衡制药"},
+    "哈尔滨誉衡药业股份有限公司": {"provider": "大连博道", "product_line": "股份本部"},
+    "哈尔滨誉衡安博医药有限公司": {"provider": "天津博达", "product_line": "天津博达"},
+    "哈尔滨誉衡经纬医药发展有限公司": {"provider": "北京塞升", "product_line": "北京塞升"},
+    "山西普德药业有限公司": {"provider": "安徽博鑫", "product_line": "西藏普德"},
+    "启东华拓药业有限公司": {"provider": "安徽博鑫", "product_line": "华拓"},
+    "广州誉东健康制药有限公司": {"provider": "安徽博鑫", "product_line": "誉东制药"},
+    "哈尔滨蒲公英药业有限公司": {"provider": "安徽博鑫", "product_line": "蒲公英"}
+  }
+}

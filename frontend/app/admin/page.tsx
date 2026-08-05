@@ -15,8 +15,31 @@ type Agent = {
   created_at?: string;
 };
 
-type Provider = { id: number; name: string; region?: string; contact?: string; phone?: string };
-type Product = { id: number; name: string; factory_name?: string; code?: string };
+type Provider = {
+  id: number;
+  name: string;
+  code?: string;
+  region?: string;
+  contact?: string;
+  phone?: string;
+  source?: string;
+};
+type Factory = { id: number; code?: string; name: string; short_name?: string };
+type Product = {
+  id: number;
+  name: string;
+  factory_name?: string;
+  factory_short_name?: string;
+  code?: string;
+  source?: string;
+};
+type Hospital = {
+  id: number;
+  name: string;
+  province?: string;
+  city?: string;
+  level?: string;
+};
 type Fee = { id: number; name: string; category: string; amount: number; unit: string };
 type Report = { id: number; title: string; period: string; status: string };
 type Meeting = { id: number; title: string; status: string; budget?: number };
@@ -25,7 +48,9 @@ const tabs = [
   { key: "agents", label: "代理商管理" },
   { key: "providers", label: "服务商管理" },
   { key: "reps", label: "代表管理" },
+  { key: "factories", label: "工厂管理" },
   { key: "products", label: "产品管理" },
+  { key: "hospitals", label: "医院终端" },
   { key: "fees", label: "费用标准" },
   { key: "reports", label: "报告管理" },
   { key: "approvals", label: "审批管理" },
@@ -35,19 +60,24 @@ export default function AdminPage() {
   const [tab, setTab] = useState("agents");
   const [agents, setAgents] = useState<Agent[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
+  const [factories, setFactories] = useState<Factory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [fees, setFees] = useState<Fee[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [filings, setFilings] = useState<any[]>([]);
   const [error, setError] = useState("");
+  const [syncMsg, setSyncMsg] = useState("");
 
   async function load() {
     try {
-      const [a, p, pr, f, r, m, fi] = await Promise.all([
+      const [a, p, fac, pr, h, f, r, m, fi] = await Promise.all([
         api<Agent[]>("/api/agents"),
         api<Provider[]>("/api/providers"),
+        api<Factory[]>("/api/factories"),
         api<Product[]>("/api/products"),
+        api<Hospital[]>("/api/hospitals"),
         api<Fee[]>("/api/fees"),
         api<Report[]>("/api/reports"),
         api<Meeting[]>("/api/meetings"),
@@ -55,7 +85,9 @@ export default function AdminPage() {
       ]);
       setAgents(a);
       setProviders(p);
+      setFactories(fac);
       setProducts(pr);
+      setHospitals(h);
       setFees(f);
       setReports(r);
       setMeetings(m);
@@ -63,6 +95,20 @@ export default function AdminPage() {
       setError("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "加载失败");
+    }
+  }
+
+  async function syncMaster() {
+    try {
+      const res = await api<{ result: Record<string, number> }>("/api/master/sync", {
+        method: "POST",
+      });
+      setSyncMsg(
+        `已同步：工厂 ${res.result.factories} / 服务商 ${res.result.providers} / 产品 ${res.result.products}`
+      );
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "同步失败");
     }
   }
 
@@ -115,8 +161,14 @@ export default function AdminPage() {
       activeTab={tab}
       onTabChange={setTab}
       requiredRoles={["admin"]}
+      rightSlot={
+        <button className="cso-btn-secondary" onClick={syncMaster}>
+          同步真实主数据
+        </button>
+      }
     >
       {error && <p className="mb-4 text-sm text-rose-600">{error}</p>}
+      {syncMsg && <p className="mb-4 text-sm text-emerald-700">{syncMsg}</p>}
 
       {tab === "agents" && (
         <div className="grid gap-4 lg:grid-cols-3">
@@ -169,22 +221,81 @@ export default function AdminPage() {
       {tab === "providers" && (
         <section className="cso-card p-5">
           <h2 className="mb-3 font-semibold">服务商管理</h2>
+          <p className="mb-3 text-sm text-slate-500">
+            来源：oracle_bridge.ORG_MAP + BI 发薪机构 MAT_YWGS（大连博道/天津博达/安徽博鑫/北京塞升）
+          </p>
           <table className="min-w-full text-sm">
             <thead className="border-b text-slate-500">
               <tr>
+                <th className="px-2 py-2 text-left">编码</th>
                 <th className="px-2 py-2 text-left">名称</th>
                 <th className="px-2 py-2 text-left">区域</th>
-                <th className="px-2 py-2 text-left">联系人</th>
-                <th className="px-2 py-2 text-left">电话</th>
+                <th className="px-2 py-2 text-left">来源</th>
               </tr>
             </thead>
             <tbody>
               {providers.map((p) => (
                 <tr key={p.id} className="border-b border-slate-100">
+                  <td className="px-2 py-2.5">{p.code}</td>
                   <td className="px-2 py-2.5">{p.name}</td>
                   <td className="px-2 py-2.5">{p.region}</td>
-                  <td className="px-2 py-2.5">{p.contact}</td>
-                  <td className="px-2 py-2.5">{p.phone}</td>
+                  <td className="px-2 py-2.5 text-xs text-slate-500">{p.source}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {tab === "factories" && (
+        <section className="cso-card p-5">
+          <h2 className="mb-3 font-semibold">工厂管理（法人组织）</h2>
+          <p className="mb-3 text-sm text-slate-500">
+            来源：营销信息推送问数 organizations.json（12 家）
+          </p>
+          <table className="min-w-full text-sm">
+            <thead className="border-b text-slate-500">
+              <tr>
+                <th className="px-2 py-2 text-left">编码</th>
+                <th className="px-2 py-2 text-left">简称</th>
+                <th className="px-2 py-2 text-left">全称</th>
+              </tr>
+            </thead>
+            <tbody>
+              {factories.map((f) => (
+                <tr key={f.id} className="border-b border-slate-100">
+                  <td className="px-2 py-2.5">{f.code}</td>
+                  <td className="px-2 py-2.5">{f.short_name}</td>
+                  <td className="px-2 py-2.5">{f.name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {tab === "hospitals" && (
+        <section className="cso-card p-5">
+          <h2 className="mb-3 font-semibold">医院终端</h2>
+          <p className="mb-3 text-sm text-slate-500">
+            当前为种子样例；后续可从 marketing_hospital_profile / 终端主数据批量导入
+          </p>
+          <table className="min-w-full text-sm">
+            <thead className="border-b text-slate-500">
+              <tr>
+                <th className="px-2 py-2 text-left">医院</th>
+                <th className="px-2 py-2 text-left">省</th>
+                <th className="px-2 py-2 text-left">市</th>
+                <th className="px-2 py-2 text-left">等级</th>
+              </tr>
+            </thead>
+            <tbody>
+              {hospitals.map((h) => (
+                <tr key={h.id} className="border-b border-slate-100">
+                  <td className="px-2 py-2.5">{h.name}</td>
+                  <td className="px-2 py-2.5">{h.province}</td>
+                  <td className="px-2 py-2.5">{h.city}</td>
+                  <td className="px-2 py-2.5">{h.level}</td>
                 </tr>
               ))}
             </tbody>
@@ -252,12 +363,16 @@ export default function AdminPage() {
       {tab === "products" && (
         <section className="cso-card p-5">
           <h2 className="mb-3 font-semibold">产品管理</h2>
+          <p className="mb-3 text-sm text-slate-500">
+            来源：marketing-platform 拜访产品大类 + 流向常用品种
+          </p>
           <table className="min-w-full text-sm">
             <thead className="border-b text-slate-500">
               <tr>
                 <th className="px-2 py-2 text-left">产品</th>
                 <th className="px-2 py-2 text-left">编码</th>
-                <th className="px-2 py-2 text-left">工厂</th>
+                <th className="px-2 py-2 text-left">工厂简称</th>
+                <th className="px-2 py-2 text-left">工厂全称</th>
               </tr>
             </thead>
             <tbody>
@@ -265,6 +380,7 @@ export default function AdminPage() {
                 <tr key={p.id} className="border-b border-slate-100">
                   <td className="px-2 py-2.5">{p.name}</td>
                   <td className="px-2 py-2.5">{p.code}</td>
+                  <td className="px-2 py-2.5">{p.factory_short_name}</td>
                   <td className="px-2 py-2.5">{p.factory_name}</td>
                 </tr>
               ))}

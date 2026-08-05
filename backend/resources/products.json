@@ -1,0 +1,10 @@
+[
+  {"code": "11", "name": "得力静", "factory_code": "100", "source": "marketing-platform visit_call_type"},
+  {"code": "12", "name": "里先安", "factory_code": "100", "source": "marketing-platform visit_call_type"},
+  {"code": "13", "name": "美百乐镇", "factory_code": "100", "source": "marketing-platform visit_call_type"},
+  {"code": "14", "name": "傲坦家族", "factory_code": "104", "source": "marketing-platform visit_call_type"},
+  {"code": "15", "name": "弥可保", "factory_code": "10502", "source": "marketing-platform visit_call_type"},
+  {"code": "116", "name": "佩玛贝特", "factory_code": "10502", "source": "marketing-platform visit_call_type"},
+  {"code": "PD01", "name": "补达秀", "factory_code": "114", "source": "业务常用品种"},
+  {"code": "PD02", "name": "鹿瓜多肽", "factory_code": "114", "source": "流向问数常用品种"}
+]

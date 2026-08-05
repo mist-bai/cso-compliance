@@ -5,18 +5,29 @@ from sqlalchemy.orm import Session
 
 from app.auth import get_current_user, hash_password, require_roles
 from app.database import get_db
-from app.models import Agent, Factory, FeeStandard, Product, ServiceProvider, User, UserRole
+from app.models import (
+    Agent,
+    Factory,
+    FeeStandard,
+    Hospital,
+    Product,
+    ServiceProvider,
+    User,
+    UserRole,
+)
 from app.schemas import (
     AgentCreate,
     AgentOut,
     FactoryOut,
     FeeCreate,
     FeeOut,
+    HospitalOut,
     ProductCreate,
     ProductOut,
     ProviderCreate,
     ProviderOut,
 )
+from app.seed import sync_master_data
 
 router = APIRouter(tags=["master"])
 
@@ -108,8 +119,34 @@ def list_products(
     for r in rows:
         item = ProductOut.model_validate(r)
         item.factory_name = r.factory.name if r.factory else None
+        item.factory_short_name = r.factory.short_name if r.factory else None
         out.append(item)
     return out
+
+
+@router.get("/hospitals", response_model=list[HospitalOut])
+def list_hospitals(
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(get_current_user)],
+    q: str | None = None,
+    province: str | None = None,
+):
+    query = db.query(Hospital)
+    if province:
+        query = query.filter(Hospital.province == province)
+    rows = query.order_by(Hospital.id).limit(200).all()
+    if q:
+        rows = [r for r in rows if q in r.name]
+    return rows
+
+
+@router.post("/master/sync")
+def sync_master(
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_roles(UserRole.ADMIN.value))],
+):
+    """从 backend/resources 同步真实主数据（工厂/服务商/产品）。"""
+    return {"ok": True, "result": sync_master_data(db)}
 
 
 @router.post("/products", response_model=ProductOut)

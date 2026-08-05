@@ -153,7 +153,7 @@ export default function AgentPage() {
   return (
     <AppShell
       title="代理商入口"
-      subtitle="誉衡药业 - 华北区"
+      subtitle="誉衡药业 · 真实服务商主数据（大连博道等）"
       tabs={tabs}
       activeTab={tab}
       onTabChange={setTab}

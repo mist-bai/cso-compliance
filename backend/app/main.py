@@ -6,7 +6,7 @@ from sqlalchemy.exc import OperationalError
 
 from app.database import Base, SessionLocal, engine
 from app.routers import auth, dashboard, filings, meetings, master, reports, visits
-from app.seed import seed_if_empty
+from app.seed import seed_if_empty, sync_master_data
 
 app = FastAPI(title="代理商合规管理系统", version="0.1.0")
 
@@ -39,6 +39,8 @@ def on_startup():
             Base.metadata.create_all(bind=engine)
             db = SessionLocal()
             try:
+                # 每次启动同步 resources 主数据；演示账号仅空库写入
+                sync_master_data(db)
                 seed_if_empty(db)
             finally:
                 db.close()

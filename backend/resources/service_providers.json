@@ -1,0 +1,38 @@
+[
+  {
+    "code": "DLBD",
+    "name": "大连博道",
+    "region": "东北/华北",
+    "contact": null,
+    "phone": null,
+    "source": "oracle_bridge.ORG_MAP + bi_sg_fqrygz_sjff.MAT_YWGS",
+    "factory_codes": ["10502", "100"]
+  },
+  {
+    "code": "TJBD",
+    "name": "天津博达",
+    "region": "华北",
+    "contact": null,
+    "phone": null,
+    "source": "oracle_bridge.ORG_MAP + bi_sg_fqrygz_sjff.MAT_YWGS",
+    "factory_codes": ["104"]
+  },
+  {
+    "code": "AHBX",
+    "name": "安徽博鑫",
+    "region": "华东/华南",
+    "contact": null,
+    "phone": null,
+    "source": "oracle_bridge.ORG_MAP + bi_sg_fqrygz_sjff.MAT_YWGS",
+    "factory_codes": ["114", "10501"]
+  },
+  {
+    "code": "BJSS",
+    "name": "北京塞升",
+    "region": "华北",
+    "contact": null,
+    "phone": null,
+    "source": "oracle_bridge.ORG_MAP",
+    "factory_codes": ["103"]
+  }
+]

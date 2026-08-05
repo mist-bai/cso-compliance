@@ -35,7 +35,9 @@ class LoginForm(BaseModel):
 
 class FactoryOut(OrmModel):
     id: int
+    code: str | None = None
     name: str
+    short_name: str | None = None
     region: str | None = None
     is_active: bool
 
@@ -45,8 +47,20 @@ class ProductOut(OrmModel):
     name: str
     factory_id: int
     code: str | None = None
+    source: str | None = None
     is_active: bool
     factory_name: str | None = None
+    factory_short_name: str | None = None
+
+
+class HospitalOut(OrmModel):
+    id: int
+    name: str
+    province: str | None = None
+    city: str | None = None
+    level: str | None = None
+    terminal_code: str | None = None
+    is_active: bool
 
 
 class ProductCreate(BaseModel):
@@ -62,6 +76,7 @@ class ProviderOut(OrmModel):
     region: str | None = None
     contact: str | None = None
     phone: str | None = None
+    source: str | None = None
     is_active: bool
 
 

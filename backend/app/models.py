@@ -76,10 +76,14 @@ class User(Base, TimestampMixin):
 
 
 class Factory(Base, TimestampMixin):
+    """法人工厂/组织，对齐问数 organizations.json。"""
+
     __tablename__ = "factories"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    code: Mapped[str | None] = mapped_column(String(32), unique=True, nullable=True, index=True)
     name: Mapped[str] = mapped_column(String(128), unique=True)
+    short_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
     region: Mapped[str | None] = mapped_column(String(64), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -92,23 +96,39 @@ class Product(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(128))
     factory_id: Mapped[int] = mapped_column(ForeignKey("factories.id"))
-    code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    code: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    source: Mapped[str | None] = mapped_column(String(128), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     factory: Mapped[Factory] = relationship(back_populates="products")
 
 
+class Hospital(Base, TimestampMixin):
+    """医院/终端主数据（后续可从 marketing_hospital_profile 批量导入）。"""
+
+    __tablename__ = "hospitals"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(256), index=True)
+    province: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    city: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    level: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    terminal_code: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
 class ServiceProvider(Base, TimestampMixin):
-    """服务商，如哈分。"""
+    """服务商（发薪/备案机构），如大连博道、天津博达。"""
 
     __tablename__ = "service_providers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(128), unique=True)
-    code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    code: Mapped[str | None] = mapped_column(String(64), nullable=True, unique=True, index=True)
     region: Mapped[str | None] = mapped_column(String(64), nullable=True)
     contact: Mapped[str | None] = mapped_column(String(64), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    source: Mapped[str | None] = mapped_column(String(256), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     agents: Mapped[list[Agent]] = relationship(back_populates="provider")
