@@ -42,10 +42,11 @@ def _load_json(name: str):
 
 
 def sync_master_data(db: Session) -> dict:
-    """从 resources 同步工厂/服务商/产品（幂等 upsert）。"""
+    """从 resources 同步工厂/服务商/产品/医院（幂等 upsert）。"""
     orgs = _load_json("organizations.json")
     providers = _load_json("service_providers.json")
     products = _load_json("products.json")
+    hospitals = _load_json("hospitals.json") if (RESOURCES / "hospitals.json").exists() else []
 
     factory_by_code: dict[str, Factory] = {}
     for item in orgs:
@@ -110,34 +111,32 @@ def sync_master_data(db: Session) -> dict:
         row.is_active = True
         product_count += 1
 
-    # 种子医院（少量，后续可批量导入 profile）
-    sample_hospitals = [
-        ("哈尔滨医科大学附属第一医院", "黑龙江省", "哈尔滨市", "三级甲等", None),
-        ("中国医科大学附属第一医院", "辽宁省", "沈阳市", "三级甲等", None),
-        ("天津医科大学总医院", "天津市", "天津市", "三级甲等", None),
-        ("安徽医科大学第一附属医院", "安徽省", "合肥市", "三级甲等", None),
-        ("北京协和医院", "北京市", "北京市", "三级甲等", None),
-    ]
     hospital_count = 0
-    for name, province, city, level, code in sample_hospitals:
-        row = db.query(Hospital).filter(Hospital.name == name).first()
+    for item in hospitals:
+        code = item.get("terminal_code")
+        name = item["name"]
+        row = None
+        if code:
+            row = db.query(Hospital).filter(Hospital.terminal_code == code).first()
         if not row:
-            db.add(
-                Hospital(
-                    name=name,
-                    province=province,
-                    city=city,
-                    level=level,
-                    terminal_code=code,
-                )
-            )
+            row = db.query(Hospital).filter(Hospital.name == name).first()
+        if not row:
+            row = Hospital(name=name)
+            db.add(row)
             hospital_count += 1
+        row.name = name
+        row.province = item.get("province")
+        row.city = item.get("city")
+        row.level = item.get("level")
+        row.terminal_code = code
+        row.is_active = True
 
     db.commit()
     return {
         "factories": len(factory_by_code),
         "providers": len(provider_by_name),
         "products": product_count,
+        "hospitals": len(hospitals),
         "hospitals_added": hospital_count,
     }
 

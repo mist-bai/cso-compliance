@@ -39,6 +39,7 @@ type Hospital = {
   province?: string;
   city?: string;
   level?: string;
+  terminal_code?: string;
 };
 type Fee = { id: number; name: string; category: string; amount: number; unit: string };
 type Report = { id: number; title: string; period: string; status: string };
@@ -98,18 +99,77 @@ export default function AdminPage() {
     }
   }
 
+  const [hospitalQ, setHospitalQ] = useState("");
+  const [bulkText, setBulkText] = useState("");
+  const [showHospitalForm, setShowHospitalForm] = useState(false);
+
   async function syncMaster() {
     try {
       const res = await api<{ result: Record<string, number> }>("/api/master/sync", {
         method: "POST",
       });
       setSyncMsg(
-        `已同步：工厂 ${res.result.factories} / 服务商 ${res.result.providers} / 产品 ${res.result.products}`
+        `已同步：工厂 ${res.result.factories} / 服务商 ${res.result.providers} / 产品 ${res.result.products} / 医院 ${res.result.hospitals ?? 0}（新增 ${res.result.hospitals_added ?? 0}）`
       );
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "同步失败");
     }
+  }
+
+  async function createHospital(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    await api("/api/hospitals", {
+      method: "POST",
+      body: JSON.stringify({
+        name: fd.get("name"),
+        province: fd.get("province") || null,
+        city: fd.get("city") || null,
+        level: fd.get("level") || null,
+        terminal_code: fd.get("terminal_code") || null,
+      }),
+    });
+    setShowHospitalForm(false);
+    await load();
+  }
+
+  async function bulkImportHospitals() {
+    const lines = bulkText
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const items = lines.map((line) => {
+      const [name, province, city, level, terminal_code] = line.split(/[,，\t]/).map((s) => s.trim());
+      return { name, province, city, level, terminal_code };
+    }).filter((i) => i.name);
+    if (!items.length) {
+      setError("请粘贴至少一行：医院名,省,市,等级,终端编码");
+      return;
+    }
+    const res = await api<{ added: number; updated: number }>("/api/hospitals/bulk", {
+      method: "POST",
+      body: JSON.stringify({ items }),
+    });
+    setSyncMsg(`医院导入完成：新增 ${res.added} / 更新 ${res.updated}`);
+    setBulkText("");
+    await load();
+  }
+
+  async function createFee(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    await api("/api/fees", {
+      method: "POST",
+      body: JSON.stringify({
+        name: fd.get("name"),
+        category: fd.get("category") || "会议",
+        amount: Number(fd.get("amount") || 0),
+        unit: fd.get("unit") || "场",
+      }),
+    });
+    e.currentTarget.reset();
+    await load();
   }
 
   useEffect(() => {
@@ -275,32 +335,97 @@ export default function AdminPage() {
       )}
 
       {tab === "hospitals" && (
-        <section className="cso-card p-6">
-          <h2 className="cso-page-title mb-1">医院终端</h2>
-          <p className="mb-3 text-sm text-[var(--muted-foreground)]">
-            当前为种子样例；后续可从 marketing_hospital_profile / 终端主数据批量导入
-          </p>
-          <table className="cso-table">
-            <thead>
-              <tr>
-                <th>医院</th>
-                <th>省</th>
-                <th>市</th>
-                <th>等级</th>
-              </tr>
-            </thead>
-            <tbody>
-              {hospitals.map((h) => (
-                <tr key={h.id} >
-                  <td>{h.name}</td>
-                  <td>{h.province}</td>
-                  <td>{h.city}</td>
-                  <td>{h.level}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+        <div className="space-y-4">
+          <section className="cso-card p-6">
+            <div className="cso-section-head">
+              <div>
+                <h2 className="cso-page-title">医院终端</h2>
+                <p className="cso-page-desc mt-1">
+                  可同步 resources/hospitals.json（终端主数据抽样），或粘贴 CSV 批量导入
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button className="cso-btn-secondary" onClick={syncMaster}>
+                  同步主数据医院
+                </button>
+                <button className="cso-btn-primary" onClick={() => setShowHospitalForm(true)}>
+                  新增医院
+                </button>
+              </div>
+            </div>
+            <div className="cso-toolbar">
+              <input
+                className="cso-input max-w-xs"
+                placeholder="搜索医院名称..."
+                value={hospitalQ}
+                onChange={(e) => setHospitalQ(e.target.value)}
+              />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="cso-table">
+                <thead>
+                  <tr>
+                    <th>终端编码</th>
+                    <th>医院</th>
+                    <th>省</th>
+                    <th>市</th>
+                    <th>等级</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {hospitals
+                    .filter((h) => !hospitalQ || h.name.includes(hospitalQ))
+                    .map((h) => (
+                      <tr key={h.id}>
+                        <td>{h.terminal_code || "-"}</td>
+                        <td>{h.name}</td>
+                        <td>{h.province}</td>
+                        <td>{h.city}</td>
+                        <td>{h.level}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <section className="cso-card space-y-3 p-6">
+            <h3 className="cso-page-title">批量导入</h3>
+            <p className="text-sm text-[var(--muted-foreground)]">
+              每行：医院名,省,市,等级,终端编码（逗号或 Tab 分隔）
+            </p>
+            <textarea
+              className="cso-input min-h-28 py-2 font-mono text-xs"
+              value={bulkText}
+              onChange={(e) => setBulkText(e.target.value)}
+              placeholder={"莱西市第三人民医院,山东省,青岛市,三级,HB0037872"}
+            />
+            <button className="cso-btn-primary" onClick={bulkImportHospitals}>
+              导入
+            </button>
+          </section>
+          {showHospitalForm && (
+            <div className="cso-modal-mask" onClick={() => setShowHospitalForm(false)}>
+              <form
+                className="cso-card w-full max-w-lg space-y-3 p-6"
+                onClick={(e) => e.stopPropagation()}
+                onSubmit={createHospital}
+              >
+                <h3 className="cso-page-title">新增医院</h3>
+                <input className="cso-input" name="name" placeholder="医院名称" required />
+                <input className="cso-input" name="province" placeholder="省" />
+                <input className="cso-input" name="city" placeholder="市" />
+                <input className="cso-input" name="level" placeholder="等级" />
+                <input className="cso-input" name="terminal_code" placeholder="终端编码" />
+                <div className="flex justify-end gap-2">
+                  <button type="button" className="cso-btn-secondary" onClick={() => setShowHospitalForm(false)}>
+                    取消
+                  </button>
+                  <button className="cso-btn-primary">保存</button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
       )}
 
       {tab === "reps" && (
@@ -390,29 +515,39 @@ export default function AdminPage() {
       )}
 
       {tab === "fees" && (
-        <section className="cso-card p-6">
-          <h2 className="cso-page-title mb-1">费用标准</h2>
-          <table className="cso-table">
-            <thead>
-              <tr>
-                <th>名称</th>
-                <th>类别</th>
-                <th>金额</th>
-                <th>单位</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fees.map((f) => (
-                <tr key={f.id} >
-                  <td>{f.name}</td>
-                  <td>{f.category}</td>
-                  <td>{f.amount}</td>
-                  <td>{f.unit}</td>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <form className="cso-card space-y-3 p-5" onSubmit={createFee}>
+            <h2 className="font-semibold">新增费用标准</h2>
+            <input className="cso-input" name="name" placeholder="名称" required />
+            <input className="cso-input" name="category" placeholder="类别" defaultValue="会议" />
+            <input className="cso-input" name="amount" type="number" placeholder="金额" required />
+            <input className="cso-input" name="unit" placeholder="单位" defaultValue="场" />
+            <button className="cso-btn-primary">保存</button>
+          </form>
+          <section className="cso-card overflow-x-auto p-6 lg:col-span-2">
+            <h2 className="cso-page-title mb-1">费用标准</h2>
+            <table className="cso-table">
+              <thead>
+                <tr>
+                  <th>名称</th>
+                  <th>类别</th>
+                  <th>金额</th>
+                  <th>单位</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+              </thead>
+              <tbody>
+                {fees.map((f) => (
+                  <tr key={f.id}>
+                    <td>{f.name}</td>
+                    <td>{f.category}</td>
+                    <td>{f.amount}</td>
+                    <td>{f.unit}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </div>
       )}
 
       {tab === "reports" && (

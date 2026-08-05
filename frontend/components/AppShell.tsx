@@ -65,21 +65,21 @@ export default function AppShell({
               : "grid-cols-2 md:grid-cols-4";
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b bg-white">
+    <div className="min-h-screen bg-[#f8fafc]">
+      <header className="border-b border-[var(--border)] bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6">
           <div className="flex items-start gap-2.5">
             <Link
               href="/"
-              className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md text-[var(--foreground)] hover:bg-[var(--muted)]"
+              className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md text-[var(--foreground)] hover:bg-[#f1f5f9]"
               aria-label="首页"
             >
               <Home size={18} strokeWidth={1.75} />
             </Link>
             <div>
-              <Link href="/" className="text-base font-semibold tracking-tight text-[var(--foreground)]">
-                代理商合规管理系统
-              </Link>
+              <h1 className="text-base font-semibold tracking-tight text-[var(--foreground)]">
+                <Link href="/">代理商合规管理系统</Link>
+              </h1>
               <div className="text-xs text-[var(--muted-foreground)]">
                 {subtitle || title}
                 {auth.display_name ? ` · ${auth.display_name}` : ""}

@@ -23,9 +23,11 @@ type Visit = {
   rep_name?: string;
   provider_name?: string;
   visit_count: number;
+  target_count?: number;
   completion_rate?: number;
   period: string;
   uploaded_on?: string;
+  note?: string;
 };
 
 type Meeting = {
@@ -85,6 +87,9 @@ export default function AgentPage() {
   const [showCreateFiling, setShowCreateFiling] = useState(false);
   const [showMeetingForm, setShowMeetingForm] = useState(false);
   const [detail, setDetail] = useState<Meeting | null>(null);
+  const [visitDetail, setVisitDetail] = useState<Visit | null>(null);
+  const [editMeeting, setEditMeeting] = useState<Meeting | null>(null);
+  const [editFiling, setEditFiling] = useState<Filing | null>(null);
 
   async function load() {
     try {
@@ -204,6 +209,53 @@ export default function AgentPage() {
     await load();
   }
 
+  async function openVisit(id: number) {
+    const row = await api<Visit>(`/api/visits/${id}`);
+    setVisitDetail(row);
+  }
+
+  async function saveFilingEdit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editFiling) return;
+    const fd = new FormData(e.currentTarget);
+    await api(`/api/filings/${editFiling.id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        status: fd.get("status") || editFiling.status,
+        valid_from: fd.get("valid_from") || null,
+        valid_to: fd.get("valid_to") || null,
+        remark: fd.get("remark") || null,
+      }),
+    });
+    setEditFiling(null);
+    await load();
+  }
+
+  async function saveMeetingEdit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editMeeting) return;
+    const fd = new FormData(e.currentTarget);
+    const attendees = String(fd.get("attendees") || "")
+      .split(/[,，、\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    await api(`/api/meetings/${editMeeting.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        title: fd.get("title"),
+        meeting_type: fd.get("meeting_type"),
+        location: fd.get("location"),
+        meeting_date: fd.get("meeting_date") || null,
+        budget: fd.get("budget") ? Number(fd.get("budget")) : null,
+        purpose: fd.get("purpose"),
+        attendees,
+        attendees_count: attendees.length,
+      }),
+    });
+    setEditMeeting(null);
+    await load();
+  }
+
   async function submitReport(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -296,7 +348,11 @@ export default function AgentPage() {
                       <StatusBadge status={row.status} />
                     </td>
                     <td>
-                      <button className="cso-btn-ghost h-8 px-2 text-[var(--muted-foreground)]">
+                      <button
+                        className="cso-btn-ghost h-8 px-2 text-[var(--muted-foreground)]"
+                        onClick={() => setEditFiling(row)}
+                        title="编辑备案"
+                      >
                         <Pencil size={15} />
                       </button>
                     </td>
@@ -331,7 +387,12 @@ export default function AgentPage() {
                     <td>{row.rep_name}</td>
                     <td>{row.provider_name}</td>
                     <td>
-                      <button className="cso-btn-secondary h-8 px-3">{row.visit_count} 次</button>
+                      <button
+                        className="cso-btn-secondary h-8 px-3"
+                        onClick={() => openVisit(row.id)}
+                      >
+                        {row.visit_count} 次
+                      </button>
                     </td>
                     <td>{row.completion_rate}%</td>
                     <td>{row.period}</td>
@@ -406,6 +467,11 @@ export default function AgentPage() {
                     </td>
                     <td>
                       <div className="flex flex-wrap gap-1">
+                        {m.status !== "已完成" && (
+                          <button className="cso-btn-secondary h-8" onClick={() => setEditMeeting(m)}>
+                            修改
+                          </button>
+                        )}
                         {(m.status === "计划中" || m.status === "已驳回") && (
                           <button className="cso-btn-secondary h-8" onClick={() => submitMeeting(m.id)}>
                             提交审批
@@ -590,7 +656,7 @@ export default function AgentPage() {
               <dt className="text-[var(--muted-foreground)]">参与代表</dt>
               <dd className="mt-2 flex flex-wrap gap-1.5">
                 {(detail.attendees || []).map((a) => (
-                  <span key={a} className="rounded-md bg-[var(--muted)] px-2 py-0.5 text-xs">
+                  <span key={a} className="rounded-md bg-[#f1f5f9] px-2 py-0.5 text-xs">
                     {a}
                   </span>
                 ))}
@@ -610,6 +676,164 @@ export default function AgentPage() {
               </div>
             )}
           </dl>
+        </Modal>
+      )}
+
+      {visitDetail && (
+        <Modal onClose={() => setVisitDetail(null)}>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <h3 className="text-lg font-semibold">拜访明细</h3>
+            <button className="cso-btn-ghost h-8 px-2" onClick={() => setVisitDetail(null)}>
+              ×
+            </button>
+          </div>
+          <dl className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <dt className="text-[var(--muted-foreground)]">代表</dt>
+              <dd className="mt-1 font-medium">{visitDetail.rep_name || "-"}</dd>
+            </div>
+            <div>
+              <dt className="text-[var(--muted-foreground)]">服务商</dt>
+              <dd className="mt-1 font-medium">{visitDetail.provider_name || "-"}</dd>
+            </div>
+            <div>
+              <dt className="text-[var(--muted-foreground)]">统计周期</dt>
+              <dd className="mt-1 font-medium">{visitDetail.period}</dd>
+            </div>
+            <div>
+              <dt className="text-[var(--muted-foreground)]">上传日期</dt>
+              <dd className="mt-1 font-medium">{visitDetail.uploaded_on || "-"}</dd>
+            </div>
+            <div>
+              <dt className="text-[var(--muted-foreground)]">拜访次数</dt>
+              <dd className="mt-1 font-medium">{visitDetail.visit_count}</dd>
+            </div>
+            <div>
+              <dt className="text-[var(--muted-foreground)]">目标次数</dt>
+              <dd className="mt-1 font-medium">{visitDetail.target_count ?? "-"}</dd>
+            </div>
+            <div>
+              <dt className="text-[var(--muted-foreground)]">完成率</dt>
+              <dd className="mt-1 font-medium">
+                {visitDetail.completion_rate != null ? `${visitDetail.completion_rate}%` : "-"}
+              </dd>
+            </div>
+            <div className="col-span-2">
+              <dt className="text-[var(--muted-foreground)]">备注</dt>
+              <dd className="mt-1">{visitDetail.note || "无"}</dd>
+            </div>
+          </dl>
+        </Modal>
+      )}
+
+      {editFiling && (
+        <Modal onClose={() => setEditFiling(null)}>
+          <form className="space-y-3" onSubmit={saveFilingEdit}>
+            <h3 className="text-lg font-semibold">编辑代表备案</h3>
+            <p className="text-sm text-[var(--muted-foreground)]">
+              {editFiling.rep_name} · {editFiling.factory_name}
+            </p>
+            <div className="text-sm">
+              当前状态：<StatusBadge status={editFiling.status} />
+              <input type="hidden" name="status" value={editFiling.status} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-sm text-[var(--muted-foreground)]">
+                有效期起
+                <input
+                  className="cso-input mt-1"
+                  type="date"
+                  name="valid_from"
+                  defaultValue={editFiling.valid_from || ""}
+                />
+              </label>
+              <label className="text-sm text-[var(--muted-foreground)]">
+                有效期止
+                <input
+                  className="cso-input mt-1"
+                  type="date"
+                  name="valid_to"
+                  defaultValue={editFiling.valid_to || ""}
+                />
+              </label>
+            </div>
+            <textarea
+              className="cso-input min-h-20 py-2"
+              name="remark"
+              placeholder="备注"
+              defaultValue=""
+            />
+            <div className="flex justify-end gap-2">
+              <button type="button" className="cso-btn-secondary" onClick={() => setEditFiling(null)}>
+                取消
+              </button>
+              <button className="cso-btn-primary">保存</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {editMeeting && (
+        <Modal onClose={() => setEditMeeting(null)} wide>
+          <form className="space-y-3" onSubmit={saveMeetingEdit}>
+            <h3 className="text-lg font-semibold">修改会议申请</h3>
+            <input
+              className="cso-input"
+              name="title"
+              defaultValue={editMeeting.title}
+              placeholder="会议名称"
+              required
+            />
+            <select
+              className="cso-input"
+              name="meeting_type"
+              defaultValue={editMeeting.meeting_type || "学术研讨会"}
+            >
+              {meetingTypes.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+            <input
+              className="cso-input"
+              name="location"
+              defaultValue={editMeeting.location || ""}
+              placeholder="会议地点"
+              required
+            />
+            <input
+              className="cso-input"
+              type="date"
+              name="meeting_date"
+              defaultValue={editMeeting.meeting_date || ""}
+            />
+            <input
+              className="cso-input"
+              name="budget"
+              type="number"
+              defaultValue={editMeeting.budget ?? ""}
+              placeholder="会议预算（元）"
+            />
+            <textarea
+              className="cso-input min-h-20 py-2"
+              name="attendees"
+              defaultValue={(editMeeting.attendees || []).join("、")}
+              placeholder="参与代表，逗号分隔"
+            />
+            <textarea
+              className="cso-input min-h-20 py-2"
+              name="purpose"
+              defaultValue={editMeeting.purpose || ""}
+              placeholder="申请事由 / 会议目的"
+            />
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" className="cso-btn-secondary" onClick={() => setEditMeeting(null)}>
+                取消
+              </button>
+              <button className="cso-btn-primary">保存修改</button>
+            </div>
+          </form>
         </Modal>
       )}
     </AppShell>

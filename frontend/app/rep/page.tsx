@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import AppShell, { StatusBadge } from "@/components/AppShell";
+import { Modal } from "@/components/ui";
 import { api } from "@/lib/api";
 
 type Filing = {
@@ -25,6 +26,8 @@ type Meeting = {
   title: string;
   status: string;
   meeting_date?: string;
+  location?: string;
+  summary?: string;
 };
 
 type Enrollment = {
@@ -77,6 +80,8 @@ export default function RepPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [examResult, setExamResult] = useState<string>("");
+  const [summaryMeeting, setSummaryMeeting] = useState<Meeting | null>(null);
+  const [summaryText, setSummaryText] = useState("");
 
   async function load() {
     try {
@@ -181,6 +186,22 @@ export default function RepPage() {
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "交卷失败");
+    }
+  }
+
+  async function submitMeetingSummary(e: FormEvent) {
+    e.preventDefault();
+    if (!summaryMeeting || !summaryText.trim()) return;
+    try {
+      await api(`/api/meetings/${summaryMeeting.id}/summary`, {
+        method: "POST",
+        body: JSON.stringify({ summary: summaryText.trim() }),
+      });
+      setSummaryMeeting(null);
+      setSummaryText("");
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "提交总结失败");
     }
   }
 
@@ -297,12 +318,31 @@ export default function RepPage() {
       {tab === "meetings" && (
         <section className="space-y-3">
           {meetings.map((m) => (
-            <div key={m.id} className="cso-card flex items-center justify-between p-4">
+            <div key={m.id} className="cso-card flex flex-wrap items-center justify-between gap-3 p-4">
               <div>
                 <div className="font-medium">{m.title}</div>
-                <div className="text-sm text-[var(--muted-foreground)]">{m.meeting_date || "日期待定"}</div>
+                <div className="text-sm text-[var(--muted-foreground)]">
+                  {m.meeting_date || "日期待定"}
+                  {m.location ? ` · ${m.location}` : ""}
+                </div>
+                {m.summary && (
+                  <p className="mt-2 text-sm text-[var(--muted-foreground)]">总结：{m.summary}</p>
+                )}
               </div>
-              <StatusBadge status={m.status} />
+              <div className="flex items-center gap-2">
+                <StatusBadge status={m.status} />
+                {m.status === "已批准" && (
+                  <button
+                    className="cso-btn-primary h-8"
+                    onClick={() => {
+                      setSummaryMeeting(m);
+                      setSummaryText("");
+                    }}
+                  >
+                    提交总结
+                  </button>
+                )}
+              </div>
             </div>
           ))}
           {meetings.length === 0 && (
@@ -436,6 +476,28 @@ export default function RepPage() {
             </button>
           </form>
         </div>
+      )}
+
+      {summaryMeeting && (
+        <Modal onClose={() => setSummaryMeeting(null)}>
+          <form className="space-y-3" onSubmit={submitMeetingSummary}>
+            <h3 className="text-lg font-semibold">提交会议总结</h3>
+            <p className="text-sm text-[var(--muted-foreground)]">{summaryMeeting.title}</p>
+            <textarea
+              className="cso-input min-h-28 py-2"
+              value={summaryText}
+              onChange={(e) => setSummaryText(e.target.value)}
+              placeholder="请填写会议总结（参会情况、核心内容、后续跟进等）"
+              required
+            />
+            <div className="flex justify-end gap-2">
+              <button type="button" className="cso-btn-secondary" onClick={() => setSummaryMeeting(null)}>
+                取消
+              </button>
+              <button className="cso-btn-primary">提交并完成</button>
+            </div>
+          </form>
+        </Modal>
       )}
     </AppShell>
   );

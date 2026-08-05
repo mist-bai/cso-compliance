@@ -49,33 +49,40 @@ const portals = [
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-12">
-      <div className="mb-10 text-center">
+    <div className="flex min-h-screen flex-col items-center bg-white px-4 py-16">
+      <div className="mb-12 text-center">
         <h1 className="text-4xl font-bold tracking-tight text-[var(--foreground)]">
           代理商合规管理系统
         </h1>
         <p className="mt-4 text-lg text-[var(--muted-foreground)]">请选择您的角色入口</p>
       </div>
 
-      <div className="grid w-full max-w-6xl gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid w-full max-w-[1120px] gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {portals.map((p) => {
           const Icon = p.icon;
           return (
-            <Link key={p.href} href={p.href} className="block h-full">
-              <div className="cso-card-hover flex h-full flex-col p-6">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--muted)] text-[var(--foreground)]">
-                  <Icon size={22} strokeWidth={1.75} />
+            <Link key={p.href} href={p.href} className="group block h-full">
+              <div className="flex h-full flex-col rounded-xl border border-[var(--border)] bg-white text-[var(--foreground)] shadow-sm transition-shadow duration-200 group-hover:shadow-lg">
+                <div className="flex flex-col space-y-1.5 p-6">
+                  {/* 使用 muted 实色底，避免 Tailwind 对 CSS 变量 opacity 失效 */}
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#0f172a]">
+                    <Icon size={24} strokeWidth={1.75} />
+                  </div>
+                  <h2 className="text-base font-semibold leading-none tracking-tight">
+                    {p.title}
+                  </h2>
+                  <p className="text-sm text-[var(--muted-foreground)]">{p.desc}</p>
                 </div>
-                <h2 className="text-lg font-semibold text-[var(--foreground)]">{p.title}</h2>
-                <p className="mt-1 text-sm text-[var(--muted-foreground)]">{p.desc}</p>
-                <ul className="mt-4 space-y-2 text-sm text-[var(--muted-foreground)]">
-                  {p.items.map((item) => (
-                    <li key={item} className="flex gap-2">
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[var(--muted-foreground)]" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="p-6 pt-0">
+                  <ul className="space-y-2 text-sm text-[var(--muted-foreground)]">
+                    {p.items.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <span className="mt-[0.55rem] h-1 w-1 shrink-0 rounded-full bg-current opacity-70" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </Link>
           );

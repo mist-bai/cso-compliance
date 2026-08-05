@@ -1,0 +1,802 @@
+[
+  {
+    "terminal_code": "HB0036910",
+    "name": "江苏省太湖康复医院",
+    "province": "江苏省",
+    "city": "无锡市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HB0037872",
+    "name": "莱西市第三人民医院",
+    "province": "山东省",
+    "city": "青岛市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HB0040711",
+    "name": "泰州鼓楼中西医结合医院",
+    "province": "江苏省",
+    "city": "泰州市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HB0055055",
+    "name": "无锡市新吴区新安医院",
+    "province": "江苏省",
+    "city": "无锡市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HB0059885",
+    "name": "南京市大连山强制隔离戒毒所医院",
+    "province": "江苏省",
+    "city": "南京市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HB0078961",
+    "name": "天津市荣军优抚医院",
+    "province": "天津市",
+    "city": "天津市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HB0080505",
+    "name": "北京六一八厂医院",
+    "province": "北京市",
+    "city": "北京市1",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HB0083083",
+    "name": "烟台高新技术产业开发区医院",
+    "province": "山东省",
+    "city": "烟台市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HB0094033",
+    "name": "安达市鸿仁医院",
+    "province": "黑龙江省",
+    "city": "绥化市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044804",
+    "name": "微山县中医院",
+    "province": "山东省",
+    "city": "济宁市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044825",
+    "name": "黄骅市中医医院",
+    "province": "河北省",
+    "city": "沧州市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044855",
+    "name": "呼中区人民医院",
+    "province": "黑龙江省",
+    "city": "大兴安岭地区",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044875",
+    "name": "平阴县人民医院",
+    "province": "山东省",
+    "city": "济南市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044878",
+    "name": "北京首特泰康医院",
+    "province": "北京市",
+    "city": "北京市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044897",
+    "name": "中国医学科学院肿瘤医院",
+    "province": "北京市",
+    "city": "北京市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044898",
+    "name": "围场满族蒙古族自治县中医院",
+    "province": "河北省",
+    "city": "承德市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044920",
+    "name": "密山市人民医院",
+    "province": "黑龙江省",
+    "city": "鸡西市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044926",
+    "name": "天津南开华医医院",
+    "province": "天津市",
+    "city": "天津市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044931",
+    "name": "嘉祥县人民医院",
+    "province": "山东省",
+    "city": "济宁市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044932",
+    "name": "建平骨科医院",
+    "province": "辽宁省",
+    "city": "朝阳市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044951",
+    "name": "天津市人民医院",
+    "province": "天津市",
+    "city": "天津市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044953",
+    "name": "龙江县第一人民医院",
+    "province": "黑龙江省",
+    "city": "齐齐哈尔市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044989",
+    "name": "大石桥市中医院",
+    "province": "辽宁省",
+    "city": "营口市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044994",
+    "name": "新绛县糖尿病医院",
+    "province": "山西省",
+    "city": "运城市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0044997",
+    "name": "石家庄市栾城人民医院",
+    "province": "河北省",
+    "city": "石家庄市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045011",
+    "name": "本溪市第九人民医院",
+    "province": "辽宁省",
+    "city": "本溪市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045017",
+    "name": "大连大学附属中山医院",
+    "province": "辽宁省",
+    "city": "大连市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045054",
+    "name": "蚌埠市第一人民医院",
+    "province": "安徽省",
+    "city": "蚌埠市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045088",
+    "name": "天津市宝坻区郝各庄医院",
+    "province": "天津市",
+    "city": "天津市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045103",
+    "name": "彰武县人民医院",
+    "province": "辽宁省",
+    "city": "阜新市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045104",
+    "name": "香河利康儿童医院",
+    "province": "河北省",
+    "city": "廊坊市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045106",
+    "name": "锦州铁合金医院",
+    "province": "辽宁省",
+    "city": "锦州市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045112",
+    "name": "河北中石油中心医院",
+    "province": "河北省",
+    "city": "廊坊市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045113",
+    "name": "牡丹江心血管病医院",
+    "province": "黑龙江省",
+    "city": "牡丹江市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045117",
+    "name": "庆安县人民医院",
+    "province": "黑龙江省",
+    "city": "绥化市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045118",
+    "name": "北京京煤集团总医院",
+    "province": "北京市",
+    "city": "北京市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045131",
+    "name": "唐山丰润新华医院",
+    "province": "河北省",
+    "city": "唐山市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045161",
+    "name": "辽阳市第四人民医院",
+    "province": "辽宁省",
+    "city": "辽阳市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045163",
+    "name": "长治医学院附属和平医院",
+    "province": "山西省",
+    "city": "长治市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045187",
+    "name": "辽宁省健康产业集团本钢总医院",
+    "province": "辽宁省",
+    "city": "本溪市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045198",
+    "name": "嘉荫县中医院",
+    "province": "黑龙江省",
+    "city": "伊春市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045225",
+    "name": "大连市普兰店区中心医院",
+    "province": "辽宁省",
+    "city": "大连市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045247",
+    "name": "辛集市第一医院",
+    "province": "河北省",
+    "city": "石家庄市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045258",
+    "name": "绥中县东戴河电厂医院",
+    "province": "辽宁省",
+    "city": "葫芦岛市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045269",
+    "name": "黑龙江省松滨监狱医院",
+    "province": "黑龙江省",
+    "city": "哈尔滨市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045287",
+    "name": "山阴县中医医院",
+    "province": "山西省",
+    "city": "朔州市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045340",
+    "name": "盘锦市人民医院",
+    "province": "辽宁省",
+    "city": "盘锦市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045358",
+    "name": "沈阳二四五医院",
+    "province": "辽宁省",
+    "city": "沈阳市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045376",
+    "name": "鹤岗市人民医院",
+    "province": "黑龙江省",
+    "city": "鹤岗市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045393",
+    "name": "南京扬子医院",
+    "province": "江苏省",
+    "city": "南京市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045407",
+    "name": "鸡东县中医院",
+    "province": "黑龙江省",
+    "city": "鸡西市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045420",
+    "name": "齐齐哈尔市公安医院",
+    "province": "黑龙江省",
+    "city": "齐齐哈尔市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045428",
+    "name": "无锡市惠山区中医医院",
+    "province": "江苏省",
+    "city": "无锡市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045448",
+    "name": "沂源县人民医院",
+    "province": "山东省",
+    "city": "淄博市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045462",
+    "name": "高邑恒民医院",
+    "province": "河北省",
+    "city": "石家庄市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045478",
+    "name": "铁岭市中心医院",
+    "province": "辽宁省",
+    "city": "铁岭市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045491",
+    "name": "灯塔市第二人民医院",
+    "province": "辽宁省",
+    "city": "辽阳市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045505",
+    "name": "讷河市人民医院",
+    "province": "黑龙江省",
+    "city": "齐齐哈尔市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045536",
+    "name": "河北省涞源县医院",
+    "province": "河北省",
+    "city": "保定市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045546",
+    "name": "广灵县中医医院",
+    "province": "山西省",
+    "city": "大同市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045555",
+    "name": "文安县医院",
+    "province": "河北省",
+    "city": "廊坊市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045565",
+    "name": "葫芦岛市连山区人民医院",
+    "province": "辽宁省",
+    "city": "葫芦岛市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045578",
+    "name": "淄博广电医院",
+    "province": "山东省",
+    "city": "淄博市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045581",
+    "name": "涡阳县人民医院",
+    "province": "安徽省",
+    "city": "亳州市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045584",
+    "name": "宝清县人民医院",
+    "province": "黑龙江省",
+    "city": "双鸭山市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045661",
+    "name": "淮安市第二人民医院",
+    "province": "江苏省",
+    "city": "淮安市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045674",
+    "name": "沈阳维康医院",
+    "province": "辽宁省",
+    "city": "沈阳市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045683",
+    "name": "河北省深州市医院",
+    "province": "河北省",
+    "city": "衡水市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045701",
+    "name": "抚顺博爱医院",
+    "province": "辽宁省",
+    "city": "抚顺市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045704",
+    "name": "苏州平江医院",
+    "province": "江苏省",
+    "city": "苏州市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045718",
+    "name": "天津市天津医院",
+    "province": "天津市",
+    "city": "天津市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045722",
+    "name": "柳林三盛堂中医医院",
+    "province": "山西省",
+    "city": "吕梁市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045737",
+    "name": "滨州医学院附属医院",
+    "province": "山东省",
+    "city": "滨州市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045763",
+    "name": "武警安徽省总队医院",
+    "province": "安徽省",
+    "city": "合肥市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045768",
+    "name": "天津港口医院",
+    "province": "天津市",
+    "city": "天津市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045774",
+    "name": "本溪满族自治县中医院",
+    "province": "辽宁省",
+    "city": "本溪市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045822",
+    "name": "泰兴市中医院",
+    "province": "江苏省",
+    "city": "泰州市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045828",
+    "name": "宽城满族自治县中医院",
+    "province": "河北省",
+    "city": "承德市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045878",
+    "name": "穆棱市第二人民医院",
+    "province": "黑龙江省",
+    "city": "牡丹江市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045889",
+    "name": "辽宁省营口监狱医院",
+    "province": "辽宁省",
+    "city": "营口市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045890",
+    "name": "邢台市任泽区中医院",
+    "province": "河北省",
+    "city": "邢台市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045919",
+    "name": "辽阳泌尿外科医院",
+    "province": "辽宁省",
+    "city": "辽阳市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045936",
+    "name": "齐齐哈尔一厂医院",
+    "province": "黑龙江省",
+    "city": "齐齐哈尔市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045957",
+    "name": "镇江市第三人民医院",
+    "province": "江苏省",
+    "city": "镇江市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0045979",
+    "name": "蒙阴县人民医院",
+    "province": "山东省",
+    "city": "临沂市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046041",
+    "name": "尚志市中医医院",
+    "province": "黑龙江省",
+    "city": "哈尔滨市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046054",
+    "name": "哈尔滨工业大学医院",
+    "province": "黑龙江省",
+    "city": "哈尔滨市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046075",
+    "name": "呼玛县人民医院",
+    "province": "黑龙江省",
+    "city": "大兴安岭地区",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046115",
+    "name": "沈阳胡台新城医院",
+    "province": "辽宁省",
+    "city": "沈阳市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046137",
+    "name": "大兴安岭地区人民医院",
+    "province": "黑龙江省",
+    "city": "大兴安岭地区",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046197",
+    "name": "大庆市人民医院",
+    "province": "黑龙江省",
+    "city": "大庆市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046199",
+    "name": "黑龙江省前进农场医院",
+    "province": "黑龙江省",
+    "city": "佳木斯市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046223",
+    "name": "如东县第四人民医院",
+    "province": "江苏省",
+    "city": "南通市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046226",
+    "name": "新乐市中医医院",
+    "province": "河北省",
+    "city": "石家庄市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046227",
+    "name": "乐陵市人民医院",
+    "province": "山东省",
+    "city": "德州市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046230",
+    "name": "威海卫人民医院",
+    "province": "山东省",
+    "city": "威海市",
+    "level": "三级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046248",
+    "name": "朝阳市中医院",
+    "province": "辽宁省",
+    "city": "朝阳市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046267",
+    "name": "北京市宣武中医医院",
+    "province": "北京市",
+    "city": "北京市2",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046271",
+    "name": "丹东市第一医院",
+    "province": "辽宁省",
+    "city": "丹东市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  },
+  {
+    "terminal_code": "HP0046322",
+    "name": "黑龙江省长水河农场医院",
+    "province": "黑龙江省",
+    "city": "黑河市",
+    "level": "未分级",
+    "source": "terminal_reference"
+  }
+]

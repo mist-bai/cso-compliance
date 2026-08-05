@@ -22,6 +22,8 @@ from app.schemas import (
     FactoryOut,
     FeeCreate,
     FeeOut,
+    HospitalBulkImport,
+    HospitalCreate,
     HospitalOut,
     ProductCreate,
     ProductOut,
@@ -155,10 +157,65 @@ def list_hospitals(
     query = db.query(Hospital)
     if province:
         query = query.filter(Hospital.province == province)
-    rows = query.order_by(Hospital.id).limit(200).all()
+    rows = query.order_by(Hospital.id).limit(500).all()
     if q:
         rows = [r for r in rows if q in r.name]
     return rows
+
+
+@router.post("/hospitals", response_model=HospitalOut)
+def create_hospital(
+    body: HospitalCreate,
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_roles(UserRole.ADMIN.value))],
+):
+    if body.terminal_code:
+        exists = (
+            db.query(Hospital)
+            .filter(Hospital.terminal_code == body.terminal_code)
+            .first()
+        )
+        if exists:
+            raise HTTPException(status_code=400, detail="终端编码已存在")
+    row = Hospital(**body.model_dump())
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return row
+
+
+@router.post("/hospitals/bulk")
+def bulk_import_hospitals(
+    body: HospitalBulkImport,
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_roles(UserRole.ADMIN.value))],
+):
+    added = 0
+    updated = 0
+    for item in body.items:
+        row = None
+        if item.terminal_code:
+            row = (
+                db.query(Hospital)
+                .filter(Hospital.terminal_code == item.terminal_code)
+                .first()
+            )
+        if not row:
+            row = db.query(Hospital).filter(Hospital.name == item.name).first()
+        if not row:
+            row = Hospital(name=item.name)
+            db.add(row)
+            added += 1
+        else:
+            updated += 1
+        row.name = item.name
+        row.province = item.province
+        row.city = item.city
+        row.level = item.level
+        row.terminal_code = item.terminal_code
+        row.is_active = True
+    db.commit()
+    return {"ok": True, "added": added, "updated": updated, "total": len(body.items)}
 
 
 @router.post("/master/sync")
@@ -166,7 +223,7 @@ def sync_master(
     db: Annotated[Session, Depends(get_db)],
     _: Annotated[User, Depends(require_roles(UserRole.ADMIN.value))],
 ):
-    """从 backend/resources 同步真实主数据（工厂/服务商/产品）。"""
+    """从 backend/resources 同步真实主数据（工厂/服务商/产品/医院）。"""
     return {"ok": True, "result": sync_master_data(db)}
 
 

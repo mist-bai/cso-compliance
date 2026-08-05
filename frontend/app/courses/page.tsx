@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import AppShell, { StatusBadge } from "@/components/AppShell";
+import { Modal } from "@/components/ui";
 import { api } from "@/lib/api";
 
 type Course = {
@@ -25,6 +26,16 @@ type TrainStat = {
   pending_courses: number;
 };
 
+type Question = {
+  id: number;
+  course_id: number;
+  stem: string;
+  options: string[];
+  score: number;
+  sort_order: number;
+  answer?: string | null;
+};
+
 const tabs = [
   { key: "list", label: "培训课程列表" },
   { key: "stats", label: "课程参与统计" },
@@ -38,6 +49,8 @@ export default function CoursesPage() {
   const [q, setQ] = useState("");
   const [error, setError] = useState("");
   const [showCreate, setShowCreate] = useState(false);
+  const [editCourse, setEditCourse] = useState<Course | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
 
   async function load() {
     try {
@@ -74,6 +87,43 @@ export default function CoursesPage() {
       }),
     });
     setShowCreate(false);
+    await load();
+  }
+
+  async function openQuestions(course: Course) {
+    const qs = await api<Question[]>(`/api/training/courses/${course.id}/questions`);
+    setEditCourse(course);
+    setQuestions(qs);
+  }
+
+  async function addQuestion(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editCourse) return;
+    const fd = new FormData(e.currentTarget);
+    const options = [fd.get("a"), fd.get("b"), fd.get("c"), fd.get("d")]
+      .map((x) => String(x || "").trim())
+      .filter(Boolean);
+    await api(`/api/training/courses/${editCourse.id}/questions`, {
+      method: "POST",
+      body: JSON.stringify({
+        stem: fd.get("stem"),
+        options,
+        answer: String(fd.get("answer") || "A").toUpperCase(),
+        score: Number(fd.get("score") || 20),
+        sort_order: questions.length + 1,
+      }),
+    });
+    e.currentTarget.reset();
+    await openQuestions(editCourse);
+    await load();
+  }
+
+  async function removeQuestion(qid: number) {
+    if (!editCourse) return;
+    await api(`/api/training/courses/${editCourse.id}/questions/${qid}`, {
+      method: "DELETE",
+    });
+    await openQuestions(editCourse);
     await load();
   }
 
@@ -116,11 +166,12 @@ export default function CoursesPage() {
                 <th>学习人次</th>
                 <th>通过比例</th>
                 <th>发布日期</th>
+                <th>操作</th>
               </tr>
             </thead>
             <tbody>
               {courses.map((c) => (
-                <tr key={c.id} >
+                <tr key={c.id}>
                   <td>
                     {c.name}
                     {c.is_compliance && (
@@ -133,10 +184,13 @@ export default function CoursesPage() {
                   <td>{c.has_exam ? "是" : "否"}</td>
                   <td>{c.question_count}</td>
                   <td>{c.learner_count}</td>
-                  <td>
-                    {c.pass_rate != null ? `${c.pass_rate}%` : "-"}
-                  </td>
+                  <td>{c.pass_rate != null ? `${c.pass_rate}%` : "-"}</td>
                   <td>{c.published_on || "-"}</td>
+                  <td>
+                    <button className="cso-btn-secondary h-8" onClick={() => openQuestions(c)}>
+                      维护题目
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -150,7 +204,9 @@ export default function CoursesPage() {
             <div key={c.id} className="cso-card p-4">
               <div className="text-sm font-medium">{c.name}</div>
               <div className="mt-3 text-2xl font-semibold">{c.learner_count}</div>
-              <div className="text-xs text-[var(--muted-foreground)]">学习人次 · 通过率 {c.pass_rate ?? 0}%</div>
+              <div className="text-xs text-[var(--muted-foreground)]">
+                学习人次 · 通过率 {c.pass_rate ?? 0}%
+              </div>
             </div>
           ))}
         </section>
@@ -171,7 +227,7 @@ export default function CoursesPage() {
             </thead>
             <tbody>
               {stats.map((s) => (
-                <tr key={s.representative_id} >
+                <tr key={s.representative_id}>
                   <td>{s.rep_name}</td>
                   <td>{s.total_courses}</td>
                   <td>{s.completed_courses}</td>
@@ -179,7 +235,11 @@ export default function CoursesPage() {
                   <td>
                     <StatusBadge
                       status={
-                        s.pending_courses === 0 ? "考试通过" : s.completed_courses > 0 ? "学习中" : "未开始"
+                        s.pending_courses === 0
+                          ? "考试通过"
+                          : s.completed_courses > 0
+                            ? "学习中"
+                            : "未开始"
                       }
                     />
                   </td>
@@ -191,8 +251,8 @@ export default function CoursesPage() {
       )}
 
       {showCreate && (
-        <div className="cso-modal-mask">
-          <form className="cso-card w-full max-w-lg space-y-3 p-6" onSubmit={createCourse}>
+        <Modal onClose={() => setShowCreate(false)}>
+          <form className="space-y-3" onSubmit={createCourse}>
             <h3 className="cso-page-title">新建课程</h3>
             <input className="cso-input" name="name" placeholder="课程名称" required />
             <input className="cso-input" name="description" placeholder="课程描述" />
@@ -203,7 +263,7 @@ export default function CoursesPage() {
               defaultValue={60}
               placeholder="时长（分钟）"
             />
-            <textarea className="cso-input min-h-24" name="content" placeholder="学习内容" />
+            <textarea className="cso-input min-h-24 py-2" name="content" placeholder="学习内容" />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="has_exam" value="1" defaultChecked /> 包含考试
             </label>
@@ -217,7 +277,66 @@ export default function CoursesPage() {
               <button className="cso-btn-primary">保存</button>
             </div>
           </form>
-        </div>
+        </Modal>
+      )}
+
+      {editCourse && (
+        <Modal onClose={() => setEditCourse(null)} wide>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-semibold">题目维护 · {editCourse.name}</h3>
+              <p className="text-sm text-[var(--muted-foreground)]">共 {questions.length} 题</p>
+            </div>
+            <button className="cso-btn-ghost h-8 px-2" onClick={() => setEditCourse(null)}>
+              ×
+            </button>
+          </div>
+          <ul className="mb-4 max-h-56 space-y-2 overflow-y-auto text-sm">
+            {questions.map((qitem, idx) => (
+              <li key={qitem.id} className="rounded-lg border border-[var(--border)] p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="font-medium">
+                      {idx + 1}. {qitem.stem}
+                    </div>
+                    <div className="mt-1 text-[var(--muted-foreground)]">
+                      答案 {qitem.answer} · {qitem.score} 分
+                    </div>
+                  </div>
+                  <button className="cso-btn-secondary h-8" onClick={() => removeQuestion(qitem.id)}>
+                    删除
+                  </button>
+                </div>
+              </li>
+            ))}
+            {questions.length === 0 && (
+              <li className="text-[var(--muted-foreground)]">暂无题目，请在下方添加</li>
+            )}
+          </ul>
+          <form className="space-y-2 border-t border-[var(--border)] pt-4" onSubmit={addQuestion}>
+            <h4 className="font-medium">新增题目</h4>
+            <input className="cso-input" name="stem" placeholder="题干" required />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <input className="cso-input" name="a" placeholder="选项 A" required />
+              <input className="cso-input" name="b" placeholder="选项 B" required />
+              <input className="cso-input" name="c" placeholder="选项 C" />
+              <input className="cso-input" name="d" placeholder="选项 D" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <select className="cso-input" name="answer" defaultValue="B">
+                {["A", "B", "C", "D"].map((x) => (
+                  <option key={x} value={x}>
+                    正确答案 {x}
+                  </option>
+                ))}
+              </select>
+              <input className="cso-input" name="score" type="number" defaultValue={20} />
+            </div>
+            <div className="flex justify-end">
+              <button className="cso-btn-primary">添加题目</button>
+            </div>
+          </form>
+        </Modal>
       )}
     </AppShell>
   );

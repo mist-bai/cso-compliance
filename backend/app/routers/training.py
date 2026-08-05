@@ -27,6 +27,7 @@ from app.schemas import (
     EnrollmentOut,
     ExamResultOut,
     ExamSubmit,
+    QuestionCreate,
     QuestionOut,
 )
 
@@ -124,6 +125,58 @@ def list_questions(
         )
         out.append(item)
     return out
+
+
+@router.post("/courses/{course_id}/questions", response_model=QuestionOut)
+def create_question(
+    course_id: int,
+    body: QuestionCreate,
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_roles(UserRole.ADMIN.value, UserRole.ACADEMY.value))],
+):
+    course = db.get(Course, course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="课程不存在")
+    if len(body.options) < 2:
+        raise HTTPException(status_code=400, detail="至少需要 2 个选项")
+    answer = body.answer.strip().upper()
+    if answer not in {chr(65 + i) for i in range(len(body.options))}:
+        raise HTTPException(status_code=400, detail="答案必须对应选项字母")
+    row = ExamQuestion(
+        course_id=course_id,
+        stem=body.stem,
+        options_json=json.dumps(body.options, ensure_ascii=False),
+        answer=answer,
+        score=body.score,
+        sort_order=body.sort_order,
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return QuestionOut(
+        id=row.id,
+        course_id=row.course_id,
+        stem=row.stem,
+        options=body.options,
+        score=row.score,
+        sort_order=row.sort_order,
+        answer=row.answer,
+    )
+
+
+@router.delete("/courses/{course_id}/questions/{question_id}")
+def delete_question(
+    course_id: int,
+    question_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_roles(UserRole.ADMIN.value, UserRole.ACADEMY.value))],
+):
+    row = db.get(ExamQuestion, question_id)
+    if not row or row.course_id != course_id:
+        raise HTTPException(status_code=404, detail="题目不存在")
+    db.delete(row)
+    db.commit()
+    return {"ok": True}
 
 
 @router.get("/enrollments", response_model=list[EnrollmentOut])
@@ -294,9 +347,19 @@ def submit_exam(
 @router.get("/stats/by-rep")
 def training_stats_by_rep(
     db: Annotated[Session, Depends(get_db)],
-    user: Annotated[User, Depends(require_roles(UserRole.AGENT.value, UserRole.ADMIN.value, UserRole.ACADEMY.value))],
+    user: Annotated[
+        User,
+        Depends(
+            require_roles(
+                UserRole.AGENT.value,
+                UserRole.ADMIN.value,
+                UserRole.ACADEMY.value,
+                UserRole.COMPLIANCE.value,
+            )
+        ),
+    ],
 ):
-    """代理商视角：名下代表培训完成情况。"""
+    """代理商/合规视角：代表培训完成情况。"""
     q = db.query(Representative)
     if user.role == UserRole.AGENT.value and user.agent_id:
         q = q.filter(Representative.agent_id == user.agent_id)

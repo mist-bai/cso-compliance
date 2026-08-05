@@ -43,6 +43,22 @@ def list_visits(
     return [_to_out(db, row) for row in rows]
 
 
+@router.get("/{visit_id}", response_model=VisitOut)
+def get_visit(
+    visit_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    user: Annotated[User, Depends(get_current_user)],
+):
+    row = db.get(VisitRecord, visit_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="拜访记录不存在")
+    if user.role == UserRole.AGENT.value and row.agent_id != user.agent_id:
+        raise HTTPException(status_code=403, detail="无权查看")
+    if user.role == UserRole.REP.value and row.representative_id != user.representative_id:
+        raise HTTPException(status_code=403, detail="无权查看")
+    return _to_out(db, row)
+
+
 @router.post("", response_model=VisitOut)
 def create_or_add_visit(
     body: VisitCreate,

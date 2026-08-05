@@ -63,6 +63,26 @@ class HospitalOut(OrmModel):
     is_active: bool
 
 
+class HospitalCreate(BaseModel):
+    name: str
+    province: str | None = None
+    city: str | None = None
+    level: str | None = None
+    terminal_code: str | None = None
+
+
+class HospitalBulkItem(BaseModel):
+    name: str
+    province: str | None = None
+    city: str | None = None
+    level: str | None = None
+    terminal_code: str | None = None
+
+
+class HospitalBulkImport(BaseModel):
+    items: list[HospitalBulkItem]
+
+
 class ProductCreate(BaseModel):
     name: str
     factory_id: int
@@ -268,6 +288,14 @@ class QuestionOut(OrmModel):
     sort_order: int
     # 答卷时不返回答案；管理端另接口可见
     answer: str | None = None
+
+
+class QuestionCreate(BaseModel):
+    stem: str
+    options: list[str]
+    answer: str
+    score: int = 20
+    sort_order: int = 0
 
 
 class EnrollmentOut(OrmModel):
